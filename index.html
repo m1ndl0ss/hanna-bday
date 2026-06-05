@@ -66,14 +66,10 @@ html, body {
 @keyframes vinyl-spin { to { transform: rotate(360deg); } }
 
 /* ── MENU ── */
-#menu {
-  min-height: 100vh;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 80px 0 60px;
-}
+#menu { display: block; }
 #menu-heading {
-  text-align: center; margin-bottom: 36px; flex-shrink: 0;
+  position: fixed; top: 28px; left: 0; right: 0; z-index: 5;
+  text-align: center; pointer-events: none;
 }
 #menu-heading h1 {
   font-size: clamp(18px, 2.5vw, 30px); font-weight: 200;
@@ -89,37 +85,42 @@ html, body {
 
 /* ── ORBIT STAGE ── */
 #orbit-wrap {
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
+  width: 100vw; height: 100vh;
+  position: relative; overflow: hidden;
 }
 #orbit-stage {
-  position: relative;
-  /* dimensions set by JS */
-  transform-origin: top center;
+  position: absolute; left: 50%; top: 50%;
+  width: 0; height: 0; overflow: visible;
 }
 
 /* ── CARDS (absolute positioned, managed entirely by JS) ── */
 .mol-card {
   position: absolute;
-  background: var(--surface);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 20px;
+  transform: translate(-50%, -50%);
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  border: 1px solid rgba(255,255,255,0.45);
-  /* only non-positional transitions here */
-  transition: background 0.25s ease, box-shadow 0.35s ease;
-  /* width/height transition injected inline only during swap */
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: background 0.25s ease, box-shadow 0.35s ease, transform 0.2s ease;
 }
-.mol-card:hover { background: var(--surface-hover); }
-.mol-card:not(.is-center):hover { transform: scale(1.06); }
-.mol-card.is-center { animation: center-pulse 3.5s ease-in-out infinite; }
+.mol-card:not(.is-center) {
+  background: #0f0f17;
+}
+.mol-card:not(.is-center):hover {
+  background: #14141f;
+  transform: translate(-50%, -50%) scale(1.06);
+}
+.mol-card.is-center {
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.45);
+  animation: center-pulse 3.5s ease-in-out infinite;
+}
 @keyframes center-pulse {
-  0%, 100% { transform: scale(1); }
-  50%       { transform: scale(1.025); }
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%       { transform: translate(-50%, -50%) scale(1.025); }
 }
 
 /* Both content layers stack on top of each other */
@@ -188,10 +189,10 @@ html, body {
 }
 .mol-card.is-center:hover .card-center .c-open { color: var(--text-dim); }
 
-/* ── BIRTHDAY CARD (below stage, static) ── */
+/* ── BIRTHDAY CARD (fixed bottom) ── */
 #bday-card {
-  flex-shrink: 0;
-  margin-top: 28px;
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 5;
   width: 200px; height: 80px;
   background: var(--surface);
   border-radius: 20px;
@@ -535,12 +536,10 @@ const slideSVGs = {
 const N_ORBIT  = 11;
 const CENTER_W = 400;
 const CENTER_H = 360;
-const SMALL_W  = 250;
-const SMALL_H  = 270;
-const ARC_SAMPLES = 1000;  // points for arc-length table
-
-// Dynamic stage dimensions — set by initOrbit()
-let STAGE_W, STAGE_H, CX, CY;
+const SMALL_W  = 160;
+const SMALL_H  = 180;
+const ARC_SAMPLES = 1000;
+const HEART_SCALE = 28;
 
 // ─── HEART PATH ───────────────────────────────────────────────────────────────
 // Parametric heart: x = 16·sin(t)³, y = −(13·cos(t) − 5·cos(2t) − 2·cos(3t) − cos(4t))
@@ -584,58 +583,8 @@ function posAtFraction(frac, tbl) {
   };
 }
 
-// Check minimum center-to-center distance across 40 phase offsets
-function minSpacingForTable(tbl) {
-  let minDist = Infinity;
-  for (let phaseStep = 0; phaseStep < 40; phaseStep++) {
-    const phase = phaseStep / 40;
-    const positions = [];
-    for (let i = 0; i < N_ORBIT; i++) {
-      const frac = (phase + i / N_ORBIT) % 1;
-      const p = posAtFraction(frac, tbl);
-      positions.push({ x: p.x + CX, y: p.y + CY });
-    }
-    for (let a = 0; a < positions.length; a++) {
-      for (let b = a + 1; b < positions.length; b++) {
-        const dx = positions[a].x - positions[b].x;
-        const dy = positions[a].y - positions[b].y;
-        minDist = Math.min(minDist, Math.sqrt(dx*dx + dy*dy));
-      }
-    }
-  }
-  return minDist;
-}
-
-// Compute stage dims from the heart's bounding box + card margins
-function stageDims(scale) {
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  for (let i = 0; i <= ARC_SAMPLES; i++) {
-    const t = (i / ARC_SAMPLES) * 2 * Math.PI;
-    const { hx, hy } = heartXY(t, scale);
-    if (hx < minX) minX = hx; if (hx > maxX) maxX = hx;
-    if (hy < minY) minY = hy; if (hy > maxY) maxY = hy;
-  }
-  const marginX = SMALL_W / 2 + 20;
-  const marginY = SMALL_H / 2 + 20;
-  const sw = Math.ceil(maxX - minX + marginX * 2);
-  const sh = Math.ceil(maxY - minY + marginY * 2);
-  const cx = Math.ceil(-minX + marginX);
-  const cy = Math.ceil(-minY + marginY);
-  return { sw, sh, cx, cy };
-}
-
-// Auto-select scale: start at 38, increase by 2 until min spacing ≥ 160 px
 function initOrbit() {
-  let scale = 38;
-  let tbl, dims;
-  for (let attempt = 0; attempt < 20; attempt++) {
-    dims = stageDims(scale);
-    STAGE_W = dims.sw; STAGE_H = dims.sh; CX = dims.cx; CY = dims.cy;
-    tbl = buildArcTable(scale);
-    if (minSpacingForTable(tbl) >= 160) break;
-    scale += 2;
-  }
-  arcTable = tbl;
+  arcTable = buildArcTable(HEART_SCALE);
 }
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
@@ -648,13 +597,11 @@ const cardEls     = {};
 let arcTable      = null;
 
 // ─── ORBIT MATH ──────────────────────────────────────────────────────────────
+// Positions are relative to orbit center (0,0); cards use translate(-50%,-50%)
 function getOrbitPos(slotIdx) {
   const frac = (phaseFraction + slotIdx / N_ORBIT) % 1;
   const rel  = posAtFraction(frac, arcTable);
-  return {
-    left: CX + rel.x - SMALL_W / 2,
-    top:  CY + rel.y - SMALL_H / 2,
-  };
+  return { left: rel.x, top: rel.y };
 }
 
 function updateOrbitPositions() {
@@ -710,9 +657,9 @@ function swapToCenter(molId) {
   inEl.style.transition  = SWAP_TRANS + ', background 0.25s';
   outEl.style.transition = SWAP_TRANS + ', background 0.25s';
 
-  // Incoming: grow to center
-  inEl.style.left   = (CX - CENTER_W / 2) + 'px';
-  inEl.style.top    = (CY - CENTER_H / 2) + 'px';
+  // Incoming: grow to center (0,0 = orbit origin = 50%/50% of viewport)
+  inEl.style.left   = '0px';
+  inEl.style.top    = '0px';
   inEl.style.width  = CENTER_W + 'px';
   inEl.style.height = CENTER_H + 'px';
   inEl.classList.add('is-center');
@@ -744,27 +691,27 @@ function swapToCenter(molId) {
 function renderMenu() {
   initOrbit();
   const stage = document.getElementById('orbit-stage');
-  stage.style.width  = STAGE_W + 'px';
-  stage.style.height = STAGE_H + 'px';
 
-  // Faint heart trail SVG
+  // Faint heart trail SVG — centered on orbit origin (0,0)
   (function() {
+    let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
+    arcTable.pts.forEach(p => {
+      if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+    });
+    const pad = SMALL_W;
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', `0 0 ${STAGE_W} ${STAGE_H}`);
-    svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+    svg.setAttribute('viewBox', `${minX-pad} ${minY-pad} ${maxX-minX+pad*2} ${maxY-minY+pad*2}`);
+    svg.style.cssText = `position:absolute;left:${minX-pad}px;top:${minY-pad}px;width:${maxX-minX+pad*2}px;height:${maxY-minY+pad*2}px;pointer-events:none;transform:translate(-0%,-0%);overflow:visible;`;
     let d = '';
-    for (let i = 0; i <= ARC_SAMPLES; i++) {
-      const p = arcTable.pts[i];
-      d += i === 0 ? `M${(CX+p.x).toFixed(1)},${(CY+p.y).toFixed(1)}` : `L${(CX+p.x).toFixed(1)},${(CY+p.y).toFixed(1)}`;
-    }
+    arcTable.pts.forEach((p, i) => {
+      d += i === 0 ? `M${p.x.toFixed(1)},${p.y.toFixed(1)}` : `L${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+    });
     d += 'Z';
     const trail = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    trail.setAttribute('d', d);
-    trail.setAttribute('fill', 'none');
-    trail.setAttribute('stroke', '#F5C842');
-    trail.setAttribute('stroke-width', '1.5');
-    trail.setAttribute('stroke-dasharray', '6 10');
-    trail.setAttribute('opacity', '0.25');
+    trail.setAttribute('d', d); trail.setAttribute('fill', 'none');
+    trail.setAttribute('stroke', '#F5C842'); trail.setAttribute('stroke-width', '1.5');
+    trail.setAttribute('stroke-dasharray', '6 10'); trail.setAttribute('opacity', '0.25');
     svg.appendChild(trail);
     stage.appendChild(svg);
   })();
@@ -810,10 +757,10 @@ function renderMenu() {
     stage.appendChild(el);
   });
 
-  // Set initial positions (no animation)
+  // Set initial positions — center at origin, small cards at orbit coords
   const centerEl = cardEls['dopamine'];
-  centerEl.style.left = (CX - CENTER_W / 2) + 'px';
-  centerEl.style.top  = (CY - CENTER_H / 2) + 'px';
+  centerEl.style.left = '0px';
+  centerEl.style.top  = '0px';
 
   orbitCards.forEach((id, i) => {
     const p = getOrbitPos(i);
@@ -822,25 +769,8 @@ function renderMenu() {
   });
 
   setGlow(centerEl, 'dopamine');
-  fitStage();
   requestAnimationFrame(orbitStep);
 }
-
-// ─── RESPONSIVE SCALING ───────────────────────────────────────────────────────
-function fitStage() {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const scaleW = (vw - 32) / STAGE_W;
-  const scaleH = (vh - 180) / STAGE_H; // leave room for heading + birthday btn
-  const scale  = Math.min(0.82, scaleW, scaleH);
-  const stage  = document.getElementById('orbit-stage');
-  const wrap   = document.getElementById('orbit-wrap');
-  stage.style.transform       = `scale(${scale})`;
-  stage.style.transformOrigin = 'top center';
-  wrap.style.width  = (STAGE_W * scale) + 'px';
-  wrap.style.height = (STAGE_H * scale) + 'px';
-}
-window.addEventListener('resize', fitStage);
 
 // ─── OPEN / CLOSE SLIDES ──────────────────────────────────────────────────────
 function openSlide(id) {
@@ -921,7 +851,14 @@ function buildIntroHeart() {
   const svg = document.getElementById('intro-heart');
   if (!svg || !arcTable) return;
 
-  svg.setAttribute('viewBox', `0 0 ${STAGE_W} ${STAGE_H}`);
+  // Compute bounding box of heart path
+  let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
+  arcTable.pts.forEach(p => {
+    if (p.x < minX) minX=p.x; if (p.x > maxX) maxX=p.x;
+    if (p.y < minY) minY=p.y; if (p.y > maxY) maxY=p.y;
+  });
+  const pad = 40;
+  svg.setAttribute('viewBox', `${minX-pad} ${minY-pad} ${maxX-minX+pad*2} ${maxY-minY+pad*2}`);
 
   // ── SVG filter: glow bloom ──
   const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
@@ -936,13 +873,11 @@ function buildIntroHeart() {
     </filter>`;
   svg.appendChild(defs);
 
-  // Build path data
+  // Build path data using raw coordinates (centered at 0,0)
   let d = '';
   for (let i = 0; i <= ARC_SAMPLES; i++) {
     const p = arcTable.pts[i];
-    const x = (CX + p.x).toFixed(1);
-    const y = (CY + p.y).toFixed(1);
-    d += i === 0 ? `M${x},${y}` : `L${x},${y}`;
+    d += i === 0 ? `M${p.x.toFixed(1)},${p.y.toFixed(1)}` : `L${p.x.toFixed(1)},${p.y.toFixed(1)}`;
   }
   d += 'Z';
 
@@ -985,8 +920,8 @@ function buildIntroHeart() {
   const dots = [], rings = [];
   for (let i = 0; i < N_ORBIT; i++) {
     const rel = posAtFraction(i / N_ORBIT, arcTable);
-    const cx = (CX + rel.x).toFixed(1);
-    const cy = (CY + rel.y).toFixed(1);
+    const cx = rel.x.toFixed(1);
+    const cy = rel.y.toFixed(1);
     const delay = `${2.1 + i * 0.1}s`;
 
     const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
