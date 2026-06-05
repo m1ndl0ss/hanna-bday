@@ -531,7 +531,9 @@ const cardSVGs = {
   // Ring center(65,58) r=22, same catechol OHs; chain −CHOH−CH₂−NH₂
   noradrenaline:(c)=>`${ar(65,58,22,c,1.4)}${ln(84,47,100,38,c,1.4)}${ln(100,38,100,26,c,1.4)}${tx(100,21,'OH',c,7)}${ln(100,38,116,47,c,1.4)}${ln(116,47,132,54,c,1.4)}${tx(136,54,'NH₂',c,8,'start')}${ln(46,47,30,39,c,1.4)}${tx(22,38,'OH',c,8,'end')}${ln(46,69,30,77,c,1.4)}${tx(22,78,'OH',c,8,'end')}`,
   prolactin:    (c)=>{const p=[[30,40],[55,28],[85,34],[110,28],[140,38],[155,55],[145,72],[120,82],[95,90],[68,84],[44,76],[30,60]];let s='';for(let i=0;i<p.length-1;i++)s+=ln(p[i][0],p[i][1],p[i+1][0],p[i+1][1],c,1.4);s+=ln(p[p.length-1][0],p[p.length-1][1],p[0][0],p[0][1],c,1.4);p.forEach(([x,y],i)=>{if(i%3===0)s+=`<circle cx="${x}" cy="${y}" r="2.5" fill="${c}" opacity="0.5"/>`;});return s;},
-  histamine:    (c)=>`<polygon points="82,30 100,42 94,62 70,62 64,42" fill="none" stroke="${c}" stroke-width="1.4"/>${tx(82,38,'N',c,9,'middle')}${tx(68,54,'NH',c,8,'middle')}${ln(100,42,116,42,c,1.4)}${ln(116,42,128,52,c,1.4)}${tx(136,52,'NH₂',c,8,'start')}${tx(105,30,'N',c,9,'middle')}`,
+  // Histamine: imidazole pentagon, C4(72,55) on right, side chain −CH₂−CH₂−NH₂
+  // C4(72,55)→C5(57,76)→N1(32,68)→C2(32,42)→N3(57,34)→C4. N1 has H, N3 has no H.
+  histamine:    (c)=>`${ln(72,55,57,76,c,1.4)}${ln(57,76,32,68,c,1.4)}${ln(32,68,32,42,c,1.4)}${ln(32,42,57,34,c,1.4)}${ln(57,34,72,55,c,1.4)}${ln(32,68,22,75,c,1.2)}${tx(18,79,'H',c,7)}${tx(28,64,'N',c,7,'end')}${tx(57,29,'N',c,7)}${ln(72,55,88,46,c,1.4)}${ln(88,46,104,55,c,1.4)}${tx(87,38,'CH₂',c,7)}${tx(103,65,'CH₂',c,7)}${tx(117,51,'NH₂',c,8,'start')}`,
 };
 
 // ─── SLIDE SVG GENERATORS (viewBox 0 0 400 260) ──────────────────────────────
@@ -561,7 +563,9 @@ const slideSVGs = {
   // Noradrenaline slide: same as adrenaline slide but chain ends in NH₂ not NHCH₃
   noradrenaline:(c)=>`${sHex(140,140,50,c,2)}${sln(183,115,218,97,c,2)}${sln(218,97,218,72,c,2)}${stx(218,60,'OH',c,14)}${sln(218,97,253,115,c,2)}${sln(253,115,288,97,c,2)}${stx(253,132,'CH₂',c,12)}${stx(293,91,'NH₂',c,14,'start')}${sln(97,115,63,97,c,2)}${stx(50,91,'HO',c,14,'end')}${sln(97,165,63,183,c,2)}${stx(50,190,'HO',c,14,'end')}`,
   prolactin:    (c)=>{const pts=[[60,60],[110,40],[165,50],[215,40],[270,58],[300,90],[285,130],[255,158],[220,175],[180,180],[140,172],[100,160],[68,138],[52,105],[60,78]];let s='';for(let i=0;i<pts.length-1;i++)s+=sln(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],c,2.2);pts.forEach(([x,y],i)=>{if(i%2===0)s+=`<circle cx="${x}" cy="${y}" r="5" fill="${c}" opacity="0.4" class="draw-line"/>`;});s+=stx(180,110,'пролактин',c,10)+stx(180,125,'(упрощённо)',c,9);return s;},
-  histamine:    (c)=>`<polygon points="200,64 230,82 222,116 178,116 170,82" fill="none" stroke="${c}" stroke-width="2" class="draw-line"/>${stx(200,80,'N',c,16,'middle')}${stx(178,102,'NH',c,13,'middle')}${sln(230,82,262,82,c,2)}${sln(262,82,286,104,c,2)}${stx(306,104,'NH₂',c,14,'start')}${stx(248,62,'CH₂',c,11,'middle')}${stx(278,70,'CH₂',c,11,'middle')}${stx(200,52,'C',c,14,'middle')}`,
+  // Histamine slide: imidazole center(100,135) r=52, C4 on right, same topology
+  // C4(152,135)→C5(116,185)→N1(58,166)→C2(58,104)→N3(116,86)→C4
+  histamine:    (c)=>`${sln(152,135,116,185,c,2)}${sln(116,185,58,166,c,2)}${sln(58,166,58,104,c,2)}${sln(58,104,116,86,c,2)}${sln(116,86,152,135,c,2)}${sln(58,166,34,183,c,2)}${stx(26,190,'H',c,12)}${stx(52,162,'N',c,14,'end')}${stx(116,76,'N',c,14)}${sln(152,135,197,112,c,2)}${sln(197,112,242,135,c,2)}${stx(197,96,'CH₂',c,12)}${stx(242,153,'CH₂',c,12)}${stx(262,126,'NH₂',c,14,'start')}`,
 };
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
