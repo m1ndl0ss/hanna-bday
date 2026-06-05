@@ -114,15 +114,19 @@ html, body {
   transform: translate(-50%, -50%) scale(1.06);
 }
 .mol-card.is-center {
-  background: var(--surface);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.45);
+  background: rgba(255,252,240,0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(245,200,66,0.45);
+  box-shadow:
+    0 0 0 3px rgba(245,200,66,0.18),
+    0 0 48px rgba(245,200,66,0.28),
+    0 12px 40px rgba(0,0,0,0.10);
   animation: center-pulse 3.5s ease-in-out infinite;
 }
 @keyframes center-pulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50%       { transform: translate(-50%, -50%) scale(1.025); }
+  0%, 100% { transform: translate(-50%, -50%) scale(1);     box-shadow: 0 0 0 3px rgba(245,200,66,0.18), 0 0 48px rgba(245,200,66,0.28), 0 12px 40px rgba(0,0,0,0.10); }
+  50%       { transform: translate(-50%, -50%) scale(1.025); box-shadow: 0 0 0 4px rgba(245,200,66,0.28), 0 0 64px rgba(245,200,66,0.38), 0 16px 48px rgba(0,0,0,0.12); }
 }
 
 /* Both content layers stack on top of each other */
@@ -153,8 +157,8 @@ html, body {
 
 /* SVG wrappers */
 .c-svg { width: 100%; display: flex; align-items: center; justify-content: center; }
-.card-small .c-svg { height: 70px; }
-.card-small .c-svg svg { width: 100%; height: 70px; opacity: 0.65; transition: opacity 0.2s; }
+.card-small .c-svg { height: 84px; }
+.card-small .c-svg svg { width: 100%; height: 84px; opacity: 0.65; transition: opacity 0.2s; }
 .mol-card:hover .card-small .c-svg svg { opacity: 1; }
 
 .card-center .c-svg { height: 200px; }
@@ -536,10 +540,10 @@ const slideSVGs = {
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const N_ORBIT  = 11;
-const CENTER_W = 400;
-const CENTER_H = 360;
-const SMALL_W  = 120;
-const SMALL_H  = 140;
+const CENTER_W = 320;
+const CENTER_H = 288;
+const SMALL_W  = 144;
+const SMALL_H  = 168;
 const ARC_SAMPLES = 1000;
 const HEART_SCALE = 20; // fallback; auto-scaled in initOrbit
 
@@ -604,7 +608,7 @@ function initOrbit() {
   let scale = 18;
   while (scale <= 26) {
     arcTable = buildArcTable(scale);
-    if (minSpacingForTable(arcTable) >= 120) break;
+    if (minSpacingForTable(arcTable) >= 140) break;
     scale += 2;
   }
 }
