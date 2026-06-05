@@ -92,7 +92,6 @@ html, body {
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
-  min-height: 900px;
 }
 #orbit-stage {
   position: relative;
@@ -831,9 +830,9 @@ function renderMenu() {
 function fitStage() {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const scaleW = (vw - 16) / STAGE_W;
-  const scaleH = (vh - 200) / STAGE_H; // leave room for heading + birthday btn
-  const scale  = Math.min(1, scaleW, scaleH);
+  const scaleW = (vw - 32) / STAGE_W;
+  const scaleH = (vh - 180) / STAGE_H; // leave room for heading + birthday btn
+  const scale  = Math.min(0.82, scaleW, scaleH);
   const stage  = document.getElementById('orbit-stage');
   const wrap   = document.getElementById('orbit-wrap');
   stage.style.transform       = `scale(${scale})`;
