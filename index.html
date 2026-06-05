@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Химия чувств — Ханна</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,200;0,300;0,400;0,500;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #B3E5FC;
+  --surface: rgba(255,255,255,0.6);
+  --surface-hover: rgba(255,255,255,0.82);
+  --text: #0d2137;
+  --text-dim: rgba(13,33,55,0.6);
+  --text-faint: rgba(13,33,55,0.38);
+  --border: rgba(13,33,55,0.1);
+  --accent: #0d2137;
+}
+
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+#header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+  padding: 20px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: transparent;
+  pointer-events: none;
+}
+#header-title {
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-faint); font-weight: 400;
+}
+#music-btn {
+  pointer-events: all; cursor: pointer;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: transparent; border: none;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.2s;
+}
+#music-btn:hover { opacity: 0.85; }
+#vinyl {
+  width: 400px; height: 400px; border-radius: 50%;
+  overflow: hidden;
+  transform: rotate(-13deg);
+  transition: transform 0.4s ease;
+}
+#vinyl img {
+  width: 100%; height: 100%; border-radius: 50%;
+  display: block;
+  object-fit: cover;
+}
+#music-btn.playing #vinyl {
+  transform: none;
+  animation: vinyl-spin 3s linear infinite;
+}
+@keyframes vinyl-spin { to { transform: rotate(360deg); } }
+
+/* ── MENU ── */
+#menu {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80px 0 60px;
+}
+#menu-heading {
+  text-align: center; margin-bottom: 36px; flex-shrink: 0;
+}
+#menu-heading h1 {
+  font-size: clamp(18px, 2.5vw, 30px); font-weight: 200;
+  letter-spacing: 0.05em; margin-bottom: 8px;
+  background: linear-gradient(135deg, #0d2137 30%, #1a6b99);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+#menu-heading p {
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: #F5C842; font-weight: 400; opacity: 0.85;
+}
+
+/* ── ORBIT STAGE ── */
+#orbit-wrap {
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  min-height: 900px;
+}
+#orbit-stage {
+  position: relative;
+  /* dimensions set by JS */
+  transform-origin: top center;
+}
+
+/* ── CARDS (absolute positioned, managed entirely by JS) ── */
+.mol-card {
+  position: absolute;
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  border: 1px solid rgba(255,255,255,0.45);
+  /* only non-positional transitions here */
+  transition: background 0.25s ease, box-shadow 0.35s ease;
+  /* width/height transition injected inline only during swap */
+}
+.mol-card:hover { background: var(--surface-hover); }
+.mol-card:not(.is-center):hover { transform: scale(1.06); }
+.mol-card.is-center { animation: center-pulse 3.5s ease-in-out infinite; }
+@keyframes center-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.025); }
+}
+
+/* Both content layers stack on top of each other */
+.card-small,
+.card-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 14px 10px 12px; gap: 8px;
+  transition: opacity 0.25s ease;
+}
+.card-center { padding: 26px 24px 20px; gap: 10px; }
+
+/* Visibility toggling via opacity */
+.mol-card:not(.is-center) .card-center {
+  opacity: 0; pointer-events: none;
+}
+.mol-card.is-center .card-small {
+  opacity: 0; pointer-events: none;
+}
+.mol-card.is-center .card-center {
+  opacity: 1; pointer-events: all;
+  transition: opacity 0.3s ease 0.28s;
+}
+.mol-card:not(.is-center) .card-small {
+  opacity: 1; pointer-events: all;
+}
+
+/* SVG wrappers */
+.c-svg { width: 100%; display: flex; align-items: center; justify-content: center; }
+.card-small .c-svg { height: 100px; }
+.card-small .c-svg svg { width: 100%; height: 100px; opacity: 0.65; transition: opacity 0.2s; }
+.mol-card:hover .card-small .c-svg svg { opacity: 1; }
+
+.card-center .c-svg { height: 200px; }
+.card-center .c-svg svg { max-width: 100%; max-height: 200px; opacity: 0.8; transition: opacity 0.2s; }
+.mol-card.is-center:hover .card-center .c-svg svg { opacity: 1; }
+
+/* Card text */
+.card-small .c-name {
+  font-size: 16px; font-weight: 500; color: var(--text);
+  text-align: center; letter-spacing: 0.01em; line-height: 1.3;
+}
+.card-small .c-formula {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px; color: var(--text-faint);
+  text-align: center; letter-spacing: 0.03em;
+}
+.card-center .c-name {
+  font-size: 30px; font-weight: 400; color: var(--text);
+  letter-spacing: 0.03em; text-align: center;
+}
+.card-center .c-formula {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px; color: var(--text-dim);
+  text-align: center; letter-spacing: 0.05em;
+}
+.card-center .c-emotion {
+  font-size: 12px; font-weight: 200; font-style: italic;
+  color: var(--text-dim); text-align: center;
+}
+.card-center .c-open {
+  margin-top: 10px; font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-faint);
+  transition: color 0.2s;
+}
+.mol-card.is-center:hover .card-center .c-open { color: var(--text-dim); }
+
+/* ── BIRTHDAY CARD (below stage, static) ── */
+#bday-card {
+  flex-shrink: 0;
+  margin-top: 28px;
+  width: 200px; height: 80px;
+  background: var(--surface);
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; cursor: pointer;
+  transition: background 0.25s;
+  -webkit-tap-highlight-color: transparent;
+}
+#bday-card:hover { background: var(--surface-hover); }
+#bday-card .bday-icon {
+  font-size: 20px; animation: hb-float 2.5s ease-in-out infinite;
+}
+#bday-card .bday-label {
+  font-size: 12px; font-weight: 300; color: rgba(220,180,100,0.75);
+  letter-spacing: 0.03em; line-height: 1.4;
+}
+@keyframes hb-float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+
+/* ── SLIDE ── */
+.slide {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg); overflow-y: auto;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s;
+}
+.slide.active { opacity: 1; pointer-events: all; }
+.slide-inner {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  padding: 70px 24px 60px; max-width: 760px; margin: 0 auto;
+}
+.slide-back {
+  position: fixed; top: 20px; left: 24px; z-index: 200;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-dim); cursor: pointer;
+  background: rgba(179,229,252,0.88); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 16px;
+  transition: color 0.2s, border-color 0.2s;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.slide-back:hover { color: var(--text); border-color: rgba(13,33,55,0.25); }
+.slide-back svg { width: 12px; height: 12px; }
+
+.slide-molecule-label {
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-faint); margin-bottom: 6px; font-family: 'Space Mono', monospace;
+}
+.slide-name {
+  font-size: clamp(28px, 6vw, 52px); font-weight: 200; letter-spacing: 0.03em;
+  text-align: center; margin-bottom: 8px; color: var(--text);
+}
+.slide-science {
+  font-size: 12px; letter-spacing: 0.06em; color: var(--text-faint);
+  font-style: italic; text-align: center; margin-bottom: 40px;
+}
+.slide-svg-wrap {
+  width: 100%; max-width: 420px; margin: 0 auto 48px;
+  display: flex; align-items: center; justify-content: center;
+}
+.slide-svg-wrap svg { width: 100%; }
+
+.draw-line {
+  stroke-dasharray: 300; stroke-dashoffset: 300;
+  animation: draw-in 1.8s ease forwards;
+}
+.draw-line:nth-child(2)  { animation-delay: 0.10s; }
+.draw-line:nth-child(3)  { animation-delay: 0.20s; }
+.draw-line:nth-child(4)  { animation-delay: 0.30s; }
+.draw-line:nth-child(5)  { animation-delay: 0.40s; }
+.draw-line:nth-child(6)  { animation-delay: 0.50s; }
+.draw-line:nth-child(7)  { animation-delay: 0.60s; }
+.draw-line:nth-child(8)  { animation-delay: 0.70s; }
+.draw-line:nth-child(9)  { animation-delay: 0.80s; }
+.draw-line:nth-child(10) { animation-delay: 0.90s; }
+.draw-line:nth-child(11) { animation-delay: 1.00s; }
+.draw-line:nth-child(12) { animation-delay: 1.10s; }
+.draw-line:nth-child(13) { animation-delay: 1.20s; }
+.draw-line:nth-child(14) { animation-delay: 1.30s; }
+.draw-line:nth-child(15) { animation-delay: 1.40s; }
+.draw-line:nth-child(16) { animation-delay: 1.50s; }
+.draw-line:nth-child(17) { animation-delay: 1.60s; }
+.draw-line:nth-child(18) { animation-delay: 1.70s; }
+.draw-label { opacity: 0; animation: fade-in-label 0.5s ease forwards; }
+.draw-label:nth-child(1) { animation-delay: 0.3s; }
+.draw-label:nth-child(2) { animation-delay: 0.5s; }
+.draw-label:nth-child(3) { animation-delay: 0.7s; }
+.draw-label:nth-child(4) { animation-delay: 0.9s; }
+.draw-label:nth-child(5) { animation-delay: 1.1s; }
+.draw-label:nth-child(6) { animation-delay: 1.3s; }
+.draw-label:nth-child(7) { animation-delay: 1.5s; }
+.draw-label:nth-child(8) { animation-delay: 1.7s; }
+@keyframes draw-in        { to { stroke-dashoffset: 0; } }
+@keyframes fade-in-label  { to { opacity: 1; } }
+
+.slide-moment {
+  font-size: clamp(16px, 3vw, 24px); font-weight: 300;
+  text-align: center; line-height: 1.6; color: var(--text);
+  margin-bottom: 40px; padding: 0 16px; max-width: 500px;
+}
+.slide-moment::before { content: '«'; color: var(--text-dim); }
+.slide-moment::after  { content: '»'; color: var(--text-dim); }
+
+.slide-illustration {
+  width: 100%; max-width: 380px; aspect-ratio: 4/3;
+  border: 1px dashed rgba(13,33,55,0.15); border-radius: 12px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+  color: var(--text-faint); font-size: 11px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: rgba(255,255,255,0.25);
+}
+.slide-illustration svg { width: 28px; height: 28px; opacity: 0.3; }
+
+/* ── BIRTHDAY SLIDE ── */
+#birthday-slide .slide-inner { justify-content: center; text-align: center; min-height: 100vh; }
+.bday-big-icon { font-size: 48px; margin-bottom: 32px; animation: hb-float 2.5s ease-in-out infinite; }
+.bday-title {
+  font-size: clamp(24px, 5vw, 44px); font-weight: 200; letter-spacing: 0.05em;
+  color: rgba(220,180,100,0.95); margin-bottom: 16px;
+  animation: fade-up 0.8s ease forwards;
+}
+.bday-subtitle {
+  font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-faint); margin-bottom: 56px;
+  animation: fade-up 0.8s 0.2s ease both;
+}
+.bday-message {
+  max-width: 500px; font-size: clamp(15px, 2.5vw, 19px);
+  font-weight: 300; line-height: 1.8; color: var(--text-dim);
+  animation: fade-up 0.8s 0.4s ease both; font-style: italic;
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SLIDE ENTRANCE ── */
+.slide-inner > * { animation: fade-up 0.6s ease both; }
+.slide-inner > *:nth-child(1) { animation-delay: 0.05s; }
+.slide-inner > *:nth-child(2) { animation-delay: 0.12s; }
+.slide-inner > *:nth-child(3) { animation-delay: 0.18s; }
+.slide-inner > *:nth-child(4) { animation-delay: 0.24s; }
+.slide-inner > *:nth-child(5) { animation-delay: 0.30s; }
+.slide-inner > *:nth-child(6) { animation-delay: 0.36s; }
+.slide-inner > *:nth-child(7) { animation-delay: 0.42s; }
+
+/* ── PARTICLES ── */
+.particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.particle {
+  position: absolute;
+  font-size: 14px; line-height: 1;
+  animation: particle-rise linear infinite;
+  user-select: none;
+}
+@keyframes particle-rise {
+  from { transform: translateY(100vh) rotate(0deg) scale(1); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.7; }
+  to   { transform: translateY(-40px) rotate(20deg) scale(0.3); opacity: 0; }
+}
+
+/* ── INTRO ── */
+#intro {
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: all; transition: opacity 1.2s ease;
+  cursor: pointer;
+}
+#intro.hide { opacity: 0; }
+#intro.gone { display: none; }
+.intro-ring {
+  position: absolute; border-radius: 50%;
+  border: 1px solid rgba(245,200,66,0.2);
+  animation: ring-expand 4s ease-out forwards;
+}
+@keyframes ring-expand {
+  from { transform: scale(0.3); opacity: 0.8; }
+  to   { transform: scale(1.8); opacity: 0; }
+}
+#intro-text {
+  font-size: clamp(28px, 5vw, 48px); font-weight: 400;
+  text-align: center; letter-spacing: 0.04em;
+  background: linear-gradient(135deg, #0d2137 20%, #1a6b99 55%, #F5C842 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  opacity: 0; animation: fade-up 0.9s ease 0.5s both; z-index: 2;
+  padding: 14px 28px; border-radius: 16px;
+}
+#intro-skip {
+  position: absolute; bottom: 32px; right: 32px;
+  font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  color: rgba(13,33,55,0.3); cursor: pointer; pointer-events: all;
+  opacity: 0; transition: opacity 0.6s ease 2s, color 0.2s;
+}
+#intro.ready #intro-skip { opacity: 1; }
+#intro-skip:hover { color: var(--text-dim); }
+#intro-heart {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <div class="intro-ring" style="width:300px;height:300px;animation-delay:0s"></div>
+  <div class="intro-ring" style="width:500px;height:500px;animation-delay:0.5s"></div>
+  <div class="intro-ring" style="width:750px;height:750px;animation-delay:1s"></div>
+  <svg id="intro-heart" preserveAspectRatio="xMidYMid meet"></svg>
+  <div id="intro-text">For my lil chemist ♡</div>
+  <div id="intro-skip" onclick="dismissIntro()">нажми чтобы войти</div>
+</div>
+
+<audio id="bg-music" loop autoplay>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<div class="particles" id="particles"></div>
+
+<div id="header">
+  <span id="header-title">Химия чувств</span>
+  <div id="music-btn" onclick="toggleMusic()">
+    <div id="vinyl">
+      <img src="disk.png" alt="RIP 2 MY YOUTH – The Neighbourhood">
+    </div>
+  </div>
+</div>
+
+<div id="menu">
+  <div id="menu-heading">
+    <h1>Двенадцать молекул</h1>
+    <p>формулы тебя</p>
+  </div>
+  <div id="orbit-wrap">
+    <div id="orbit-stage"></div>
+  </div>
+  <div id="bday-card" onclick="openBirthday()">
+    <div class="bday-icon">✦</div>
+    <div class="bday-label">С днём рождения,<br>Ханна</div>
+  </div>
+</div>
+
+<!-- Molecule slide -->
+<div class="slide" id="mol-slide">
+  <div class="slide-back" onclick="closeSlide()">
+    <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M8 1 L2 6 L8 11"/>
+    </svg>
+    назад
+  </div>
+  <div class="slide-inner" id="slide-content"></div>
+</div>
+
+<!-- Birthday slide -->
+<div class="slide" id="birthday-slide">
+  <div class="slide-back" onclick="closeSlide()">
+    <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M8 1 L2 6 L8 11"/>
+    </svg>
+    назад
+  </div>
+  <div class="slide-inner">
+    <div class="bday-big-icon">✦</div>
+    <div class="bday-title">С днём рождения, Ханна</div>
+    <div class="bday-subtitle">с любовью и химией</div>
+    <div class="bday-message">[birthday message here]</div>
+  </div>
+</div>
+
+<script>
+// ─── MOLECULE DATA ────────────────────────────────────────────────────────────
+const molecules = [
+  { id:'dopamine',      name:'Дофамин',       formula:'C₈H₁₁NO₂',        science:'нейромедиатор системы вознаграждения',       emotion:'предвкушение, награда',          moment:'мы кормили лебедей на земунском кее',                                    color:'#a78bfa', glow:'rgba(167,139,250,0.35)' },
+  { id:'serotonin',     name:'Серотонин',      formula:'C₁₀H₁₂N₂O',       science:'регулятор настроения и благополучия',         emotion:'спокойствие, уют',               moment:'засыпаешь за три минуты, пока глажу тебе спину',                         color:'#34d399', glow:'rgba(52,211,153,0.35)' },
+  { id:'oxytocin',      name:'Окситоцин',      formula:'C₄₃H₆₆N₁₂O₁₂S₂',  science:'нейропептид привязанности и доверия',         emotion:'привязанность, доверие',         moment:'Тайсон, который не отходит от тебя ни на шаг',                           color:'#f472b6', glow:'rgba(244,114,182,0.35)' },
+  { id:'melatonin',     name:'Мелатонин',      formula:'C₁₃H₁₆N₂O₂',      science:'регулятор циркадных ритмов и сна',            emotion:'сон, безопасность',              moment:'засыпаешь у меня на руках в такси',                                      color:'#818cf8', glow:'rgba(129,140,248,0.35)' },
+  { id:'pea',           name:'Фенилэтиламин',  formula:'C₈H₁₁N',           science:'нейромедиатор первичного влечения',           emotion:'влюблённость, первое притяжение', moment:'первый поцелуй на лестнице у Савы',                                      color:'#fb923c', glow:'rgba(251,146,60,0.35)' },
+  { id:'adrenaline',    name:'Адреналин',       formula:'C₉H₁₃NO₃',        science:'гормон острой стрессовой реакции',            emotion:'возбуждение, острый момент',      moment:'лифт, который сломал мне руку во время поцелуев',                        color:'#f87171', glow:'rgba(248,113,113,0.35)' },
+  { id:'endorphin',     name:'Эндорфин',        formula:'C₁₅₇H₂₄₁N₃₉O₄₆S', science:'эндогенный опиоидный нейропептид',            emotion:'радость, эйфория',               moment:'бабушка в парке, которая сказала что нам суждено',                       color:'#fbbf24', glow:'rgba(251,191,36,0.35)' },
+  { id:'cortisol',      name:'Кортизол',        formula:'C₂₁H₃₀O₅',        science:'гормон стресса коры надпочечников',           emotion:'стресс, напряжение',             moment:'звонок Никиты в самый неподходящий момент',                              color:'#94a3b8', glow:'rgba(148,163,184,0.3)' },
+  { id:'acetylcholine', name:'Ацетилхолин',     formula:'C₇H₁₆NO₂⁺',       science:'нейромедиатор памяти и обучения',             emotion:'обучение, память',               moment:'пять раз не угадала название соединения',                                color:'#22d3ee', glow:'rgba(34,211,238,0.35)' },
+  { id:'noradrenaline', name:'Норадреналин',    formula:'C₈H₁₁NO₃',        science:'медиатор симпатической нервной системы',      emotion:'реакция, импульс',               moment:'когда ты взяла меня под руку и я чуть не ударил незнакомца',             color:'#e879f9', glow:'rgba(232,121,249,0.35)' },
+  { id:'prolactin',     name:'Пролактин',       formula:'белок 199 АК',     science:'гормон заботы и лактации',                    emotion:'забота, нежность',               moment:'Тайсон, которого ты тащила пока он какал',                               color:'#a3e635', glow:'rgba(163,230,53,0.35)' },
+  { id:'histamine',     name:'Гистамин',        formula:'C₅H₉N₃',           science:'медиатор воспаления и аллергических реакций', emotion:'реакция на раздражитель',        moment:'школьники устроили пожар на Калемегдане — нам было всё равно',           color:'#f59e0b', glow:'rgba(245,158,11,0.35)' },
+];
+
+// ─── CARD SVG GENERATORS (viewBox 0 0 180 110) ───────────────────────────────
+function hx(cx,cy,r,c,sw){const p=[];for(let i=0;i<6;i++){const a=(i*60-90)*Math.PI/180;p.push(`${(cx+r*Math.cos(a)).toFixed(1)},${(cy+r*Math.sin(a)).toFixed(1)}`);}return`<polygon points="${p.join(' ')}" fill="none" stroke="${c}" stroke-width="${sw}"/>`;}
+function ar(cx,cy,r,c,sw){return hx(cx,cy,r,c,sw)+`<circle cx="${cx}" cy="${cy}" r="${(r*0.55).toFixed(1)}" fill="none" stroke="${c}" stroke-width="${sw*0.7}" stroke-dasharray="3 2.5"/>`;}
+function ln(x1,y1,x2,y2,c,sw){return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${sw}"/>`;}
+function tx(x,y,t,c,sz,a){return`<text x="${x}" y="${y}" fill="${c}" font-size="${sz}" font-family="Space Mono,monospace" text-anchor="${a||'middle'}" dominant-baseline="central">${t}</text>`;}
+
+const cardSVGs = {
+  dopamine:     (c)=>`${ar(62,55,22,c,1.4)}${ln(40,44,24,36,c,1.4)}${tx(16,34,'OH',c,8,'end')}${ln(40,66,24,74,c,1.4)}${tx(16,76,'OH',c,8,'end')}${ln(84,44,98,36,c,1.4)}${ln(98,36,114,44,c,1.4)}${tx(124,44,'NH₂',c,8,'start')}`,
+  serotonin:    (c)=>`${ar(50,58,20,c,1.4)}${ln(50,38,50,24,c,1.4)}${tx(50,16,'HO',c,8)}${ln(70,50,82,44,c,1.4)}${ln(82,44,86,52,c,1.4)}${ln(86,52,98,52,c,1.4)}${ln(86,52,80,62,c,1.4)}${ln(70,66,80,62,c,1.4)}${ln(98,52,112,52,c,1.4)}${tx(120,52,'NH₂',c,8,'start')}${ln(82,44,88,32,c,1.4)}${tx(91,27,'N',c,8,'start')}`,
+  oxytocin:     (c)=>{const p=[];for(let i=0;i<9;i++){const a=(i*40-90)*Math.PI/180;p.push([90+36*Math.cos(a),55+30*Math.sin(a)]);}let s='',l='';for(let i=0;i<p.length;i++){const j=(i+1)%p.length;l+=ln(p[i][0],p[i][1],p[j][0],p[j][1],c,1.2);}p.forEach(([x,y])=>{s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${c}" opacity="0.5"/>`;});return l+s+ln(p[2][0],p[2][1],p[2][0]+18,p[2][1]-10,c,1.2)+tx(p[2][0]+26,p[2][1]-10,'S',c,8);},
+  melatonin:    (c)=>`${ar(50,58,20,c,1.4)}${ln(70,50,80,44,c,1.4)}${ln(80,44,82,52,c,1.4)}${ln(82,52,70,66,c,1.4)}${ln(80,44,92,40,c,1.4)}${tx(86,31,'CH₃O',c,7,'start')}${ln(82,52,96,52,c,1.4)}${ln(96,52,108,44,c,1.4)}${ln(108,44,120,50,c,1.4)}${tx(128,50,'NH',c,8,'start')}${tx(128,62,'CO',c,8,'start')}${tx(128,74,'CH₃',c,8,'start')}${ln(30,58,18,52,c,1.4)}${tx(10,52,'N',c,8)}`,
+  pea:          (c)=>`${ar(55,55,22,c,1.4)}${ln(77,45,92,38,c,1.4)}${ln(92,38,108,45,c,1.4)}${tx(84,30,'CH₂',c,8)}${tx(104,30,'CH₂',c,8)}${tx(126,45,'NH₂',c,8,'start')}`,
+  adrenaline:   (c)=>`${ar(55,58,20,c,1.4)}${ln(35,50,22,44,c,1.4)}${tx(14,44,'HO',c,8,'end')}${ln(35,66,22,72,c,1.4)}${tx(14,72,'HO',c,8,'end')}${ln(75,50,88,44,c,1.4)}${ln(88,44,102,50,c,1.4)}${tx(82,34,'CHOH',c,7)}${tx(104,50,'NH',c,8,'start')}${tx(104,62,'CH₃',c,8,'start')}`,
+  endorphin:    (c)=>['Tyr','Gly','Gly','Phe','Leu'].map((a,i)=>{const x=18+i*32,y=55;return`<rect x="${x-8}" y="${y-10}" width="24" height="20" rx="4" fill="none" stroke="${c}" stroke-width="1.2"/><text x="${x+4}" y="${y+1}" fill="${c}" font-size="7" font-family="Space Mono,monospace" text-anchor="middle">${a}</text>${i<4?ln(x+16,y,x+24,y,c,1.2):''}`;}).join('')+`<text x="163" y="59" fill="${c}" font-size="9" font-family="Space Mono,monospace">...</text>`,
+  cortisol:     (c)=>`<polygon points="24,80 44,80 52,62 36,48 20,62" fill="none" stroke="${c}" stroke-width="1.4"/><polygon points="44,80 70,80 78,62 60,48 52,62" fill="none" stroke="${c}" stroke-width="1.4"/><polygon points="70,80 92,80 98,64 82,52 78,62" fill="none" stroke="${c}" stroke-width="1.4"/><polygon points="82,52 98,64 106,50 96,38" fill="none" stroke="${c}" stroke-width="1.4"/>${ln(96,38,112,34,c,1.4)}${tx(118,30,'OH',c,8,'start')}${ln(52,62,48,48,c,1.4)}${tx(46,40,'=O',c,8,'middle')}${ln(24,80,18,90,c,1.4)}${tx(14,96,'OH',c,8,'middle')}`,
+  acetylcholine:(c)=>`${tx(14,36,'CH₃',c,8,'start')}${ln(34,36,46,45,c,1.4)}${tx(22,55,'O',c,9,'middle')}${ln(46,45,42,55,c,1.4)}${ln(42,55,52,62,c,1.4)}${tx(58,55,'‖',c,14,'middle')}${tx(12,75,'CH₃',c,8,'start')}${ln(34,75,50,68,c,1.4)}${ln(52,62,70,62,c,1.4)}${ln(70,62,84,54,c,1.4)}${tx(90,54,'O',c,9,'middle')}${ln(84,54,90,62,c,1.4)}${ln(90,62,104,62,c,1.4)}${tx(108,62,'CH₂',c,8,'middle')}${ln(120,62,134,62,c,1.4)}${tx(138,62,'CH₂',c,8,'middle')}${ln(150,62,162,56,c,1.4)}<circle cx="166" cy="52" r="6" fill="none" stroke="${c}" stroke-width="1.4"/>${tx(166,52,'N⁺',c,7,'middle')}`,
+  noradrenaline:(c)=>`${ar(55,58,20,c,1.4)}${ln(35,50,22,44,c,1.4)}${tx(14,44,'HO',c,8,'end')}${ln(35,66,22,72,c,1.4)}${tx(14,72,'HO',c,8,'end')}${ln(75,50,89,44,c,1.4)}${ln(89,44,103,50,c,1.4)}${tx(83,34,'CHOH',c,7)}${tx(109,50,'NH₂',c,8,'start')}`,
+  prolactin:    (c)=>{const p=[[30,40],[55,28],[85,34],[110,28],[140,38],[155,55],[145,72],[120,82],[95,90],[68,84],[44,76],[30,60]];let s='';for(let i=0;i<p.length-1;i++)s+=ln(p[i][0],p[i][1],p[i+1][0],p[i+1][1],c,1.4);s+=ln(p[p.length-1][0],p[p.length-1][1],p[0][0],p[0][1],c,1.4);p.forEach(([x,y],i)=>{if(i%3===0)s+=`<circle cx="${x}" cy="${y}" r="2.5" fill="${c}" opacity="0.5"/>`;});return s;},
+  histamine:    (c)=>`<polygon points="82,30 100,42 94,62 70,62 64,42" fill="none" stroke="${c}" stroke-width="1.4"/>${tx(82,38,'N',c,9,'middle')}${tx(68,54,'NH',c,8,'middle')}${ln(100,42,116,42,c,1.4)}${ln(116,42,128,52,c,1.4)}${tx(136,52,'NH₂',c,8,'start')}${tx(105,30,'N',c,9,'middle')}`,
+};
+
+// ─── SLIDE SVG GENERATORS (viewBox 0 0 400 260) ──────────────────────────────
+const SC = 'rgba(255,255,255,0.8)';
+function sln(x1,y1,x2,y2,c,sw){return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${sw}" class="draw-line"/>`;}
+function stx(x,y,t,c,sz,a){return`<text x="${x}" y="${y}" fill="${c}" font-size="${sz}" font-family="Space Mono,monospace" text-anchor="${a||'middle'}" dominant-baseline="central" class="draw-label">${t}</text>`;}
+function sHex(cx,cy,r,c,sw){const pts=[];for(let i=0;i<6;i++){const a=(i*60-90)*Math.PI/180;pts.push(`${(cx+r*Math.cos(a)).toFixed(1)},${(cy+r*Math.sin(a)).toFixed(1)}`);}const p=pts.map(s=>s.split(',').map(Number));return p.map((_,i)=>sln(p[i][0],p[i][1],p[(i+1)%6][0],p[(i+1)%6][1],c,sw)).join('')+`<circle cx="${cx}" cy="${cy}" r="${(r*0.56).toFixed(1)}" fill="none" stroke="${c}" stroke-width="${sw*0.7}" stroke-dasharray="5 4" class="draw-line"/>`;}
+const slideSVGs = {
+  dopamine:     (c)=>`${sHex(145,130,52,c,2)}${sln(113,105,83,86,c,2)}${stx(68,82,'HO',c,14,'end')}${sln(113,155,83,174,c,2)}${stx(68,178,'HO',c,14,'end')}${sln(197,105,230,88,c,2)}${sln(230,88,264,105,c,2)}${stx(290,105,'NH₂',c,14,'start')}${stx(214,68,'CH₂',c,11)}${stx(248,68,'CH₂',c,11)}`,
+  serotonin:    (c)=>`${sHex(110,140,48,c,2)}${sln(110,92,110,60,c,2)}${stx(110,46,'HO',c,14)}${sln(158,116,178,106,c,2)}${sln(178,106,184,124,c,2)}${sln(184,124,216,124,c,2)}${sln(184,124,172,148,c,2)}${sln(158,164,172,148,c,2)}${sln(216,124,246,124,c,2)}${stx(270,124,'NH₂',c,14,'start')}${sln(178,106,188,78,c,2)}${stx(195,64,'N',c,16,'start')}${stx(205,80,'H',c,12,'start')}`,
+  oxytocin:     (c)=>{const labels=['Cys','Tyr','Ile','Gln','Asn','Cys','Pro','Leu','Gly'];let s='';const pts=labels.map((_,i)=>{const a=(i*40-90)*Math.PI/180;return[200+90*Math.cos(a),130+75*Math.sin(a)];});for(let i=0;i<pts.length;i++){const j=(i+1)%pts.length;s+=sln(pts[i][0],pts[i][1],pts[j][0],pts[j][1],c,2);}pts.forEach(([x,y],i)=>{s+=`<rect x="${(x-16).toFixed(1)}" y="${(y-11).toFixed(1)}" width="32" height="22" rx="5" fill="rgba(0,0,0,0.5)" stroke="${c}" stroke-width="1.5" class="draw-line"/>`;s+=stx(x,y,labels[i],c,10);});s+=sln(pts[0][0],pts[0][1],pts[0][0]+30,pts[0][1]-20,c,2)+sln(pts[5][0],pts[5][1],pts[5][0]+30,pts[5][1]-20,c,2)+stx(pts[0][0]+46,pts[0][1]-22,'S',c,14)+stx(pts[5][0]+46,pts[5][1]-22,'S',c,14);return s;},
+  melatonin:    (c)=>`${sHex(110,140,48,c,2)}${sln(158,116,178,106,c,2)}${sln(178,106,184,124,c,2)}${sln(184,124,172,148,c,2)}${sln(158,164,172,148,c,2)}${sln(178,106,194,80,c,2)}${stx(198,66,'CH₃O',c,12,'start')}${sln(184,124,210,124,c,2)}${sln(210,124,224,110,c,2)}${sln(224,110,248,118,c,2)}${stx(258,118,'NH',c,14,'start')}${sln(258,132,268,148,c,2)}${stx(275,148,'C=O',c,12,'start')}${sln(275,162,280,180,c,2)}${stx(282,188,'CH₃',c,12,'start')}${sln(62,140,34,132,c,2)}${stx(22,126,'N',c,16,'end')}${stx(22,142,'H',c,12,'end')}`,
+  pea:          (c)=>`${sHex(140,130,52,c,2)}${sln(192,105,226,88,c,2)}${sln(226,88,262,105,c,2)}${stx(210,68,'CH₂',c,12)}${stx(248,68,'CH₂',c,12)}${stx(292,105,'NH₂',c,14,'start')}`,
+  adrenaline:   (c)=>`${sHex(130,140,50,c,2)}${sln(105,115,76,98,c,2)}${stx(62,92,'HO',c,14,'end')}${sln(105,165,76,180,c,2)}${stx(62,186,'HO',c,14,'end')}${sln(180,115,210,100,c,2)}${sln(210,100,244,115,c,2)}${stx(196,76,'CHOH',c,11)}${sln(244,115,262,105,c,2)}${stx(272,100,'NH',c,14,'start')}${sln(278,116,284,130,c,2)}${stx(288,142,'CH₃',c,12,'start')}`,
+  endorphin:    (c)=>{const aa=['Tyr','Gly','Gly','Phe','Leu','Met'];let s=aa.map((a,i)=>{const x=20+i*60,y=120;return`<rect x="${x}" y="${y-20}" width="48" height="40" rx="8" fill="rgba(0,0,0,0.4)" stroke="${c}" stroke-width="1.8" class="draw-line"/><text x="${x+24}" y="${y+2}" fill="${c}" font-size="13" font-family="Space Mono,monospace" text-anchor="middle" class="draw-label">${a}</text>${i<aa.length-1?sln(x+48,y,x+60,y,c,2):''}`;}).join('');s+=stx(390,120,'...',c,18,'start')+stx(200,70,'β-эндорфин (фрагмент)',c,10)+sln(200,170,200,200,c,1.5)+stx(200,210,'пептидная цепь',c,10);return s;},
+  cortisol:     (c)=>`<polygon points="54,200 104,200 126,158 94,122 54,140" fill="none" stroke="${c}" stroke-width="2" class="draw-line"/><polygon points="104,200 162,200 182,158 148,122 126,158" fill="none" stroke="${c}" stroke-width="2" class="draw-line"/><polygon points="162,200 212,200 224,164 196,140 182,158" fill="none" stroke="${c}" stroke-width="2" class="draw-line"/><polygon points="196,140 224,164 244,142 226,112" fill="none" stroke="${c}" stroke-width="2" class="draw-line"/>${sln(226,112,258,100,c,2)}${stx(272,96,'OH',c,14,'start')}${sln(126,158,118,118,c,2)}${stx(116,100,'=O',c,14,'middle')}${sln(54,200,38,220,c,2)}${stx(34,234,'OH',c,14,'middle')}${sln(94,122,86,94,c,2)}${stx(82,76,'HO',c,14,'middle')}`,
+  acetylcholine:(c)=>`${stx(32,90,'CH₃',c,13,'start')}${sln(68,90,88,106,c,2)}${stx(36,120,'O',c,16,'start')}${sln(88,106,80,122,c,2)}${sln(80,122,96,134,c,2)}${stx(74,110,'‖',c,22,'middle')}${stx(32,148,'CH₃',c,13,'start')}${sln(68,148,88,134,c,2)}${sln(96,134,132,134,c,2)}${stx(148,134,'O',c,16,'middle')}${sln(156,134,172,134,c,2)}${sln(172,134,194,134,c,2)}${stx(186,114,'CH₂',c,11,'middle')}${sln(194,134,218,134,c,2)}${stx(210,114,'CH₂',c,11,'middle')}${sln(218,134,240,128,c,2)}<circle cx="262" cy="120" r="24" fill="none" stroke="${c}" stroke-width="2" class="draw-line"/>${stx(262,115,'N⁺',c,16,'middle')}${sln(240,108,224,92,c,2)}${stx(214,80,'CH₃',c,11,'middle')}${sln(262,96,262,74,c,2)}${stx(262,62,'CH₃',c,11,'middle')}${sln(284,108,300,92,c,2)}${stx(314,80,'CH₃',c,11,'middle')}`,
+  noradrenaline:(c)=>`${sHex(130,140,50,c,2)}${sln(105,115,76,98,c,2)}${stx(62,92,'HO',c,14,'end')}${sln(105,165,76,180,c,2)}${stx(62,186,'HO',c,14,'end')}${sln(180,115,212,100,c,2)}${sln(212,100,248,115,c,2)}${stx(196,76,'CHOH',c,11)}${stx(262,115,'NH₂',c,14,'start')}`,
+  prolactin:    (c)=>{const pts=[[60,60],[110,40],[165,50],[215,40],[270,58],[300,90],[285,130],[255,158],[220,175],[180,180],[140,172],[100,160],[68,138],[52,105],[60,78]];let s='';for(let i=0;i<pts.length-1;i++)s+=sln(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],c,2.2);pts.forEach(([x,y],i)=>{if(i%2===0)s+=`<circle cx="${x}" cy="${y}" r="5" fill="${c}" opacity="0.4" class="draw-line"/>`;});s+=stx(180,110,'пролактин',c,10)+stx(180,125,'(упрощённо)',c,9);return s;},
+  histamine:    (c)=>`<polygon points="200,64 230,82 222,116 178,116 170,82" fill="none" stroke="${c}" stroke-width="2" class="draw-line"/>${stx(200,80,'N',c,16,'middle')}${stx(178,102,'NH',c,13,'middle')}${sln(230,82,262,82,c,2)}${sln(262,82,286,104,c,2)}${stx(306,104,'NH₂',c,14,'start')}${stx(248,62,'CH₂',c,11,'middle')}${stx(278,70,'CH₂',c,11,'middle')}${stx(200,52,'C',c,14,'middle')}`,
+};
+
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const N_ORBIT  = 11;
+const CENTER_W = 400;
+const CENTER_H = 360;
+const SMALL_W  = 250;
+const SMALL_H  = 270;
+const ARC_SAMPLES = 1000;  // points for arc-length table
+
+// Dynamic stage dimensions — set by initOrbit()
+let STAGE_W, STAGE_H, CX, CY;
+
+// ─── HEART PATH ───────────────────────────────────────────────────────────────
+// Parametric heart: x = 16·sin(t)³, y = −(13·cos(t) − 5·cos(2t) − 2·cos(3t) − cos(4t))
+function heartXY(t, scale) {
+  const hx =  scale * 16 * Math.pow(Math.sin(t), 3);
+  const hy = -scale * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+  return { hx, hy };
+}
+
+// ─── ARC-LENGTH PARAMETERIZATION ─────────────────────────────────────────────
+function buildArcTable(scale) {
+  const pts = [];
+  for (let i = 0; i <= ARC_SAMPLES; i++) {
+    const t = (i / ARC_SAMPLES) * 2 * Math.PI;
+    const { hx, hy } = heartXY(t, scale);
+    pts.push({ x: hx, y: hy, t });
+  }
+  const cumLen = [0];
+  for (let i = 1; i <= ARC_SAMPLES; i++) {
+    const dx = pts[i].x - pts[i-1].x;
+    const dy = pts[i].y - pts[i-1].y;
+    cumLen.push(cumLen[i-1] + Math.sqrt(dx*dx + dy*dy));
+  }
+  const totalLen = cumLen[ARC_SAMPLES];
+  return { pts, cumLen, totalLen };
+}
+
+// Return {x, y} at arc-fraction frac ∈ [0,1) via binary search
+function posAtFraction(frac, tbl) {
+  const target = ((frac % 1) + 1) % 1 * tbl.totalLen;
+  let lo = 0, hi = ARC_SAMPLES;
+  while (lo < hi - 1) {
+    const mid = (lo + hi) >> 1;
+    if (tbl.cumLen[mid] <= target) lo = mid; else hi = mid;
+  }
+  const span = tbl.cumLen[hi] - tbl.cumLen[lo];
+  const alpha = span < 1e-9 ? 0 : (target - tbl.cumLen[lo]) / span;
+  return {
+    x: tbl.pts[lo].x + alpha * (tbl.pts[hi].x - tbl.pts[lo].x),
+    y: tbl.pts[lo].y + alpha * (tbl.pts[hi].y - tbl.pts[lo].y),
+  };
+}
+
+// Check minimum center-to-center distance across 40 phase offsets
+function minSpacingForTable(tbl) {
+  let minDist = Infinity;
+  for (let phaseStep = 0; phaseStep < 40; phaseStep++) {
+    const phase = phaseStep / 40;
+    const positions = [];
+    for (let i = 0; i < N_ORBIT; i++) {
+      const frac = (phase + i / N_ORBIT) % 1;
+      const p = posAtFraction(frac, tbl);
+      positions.push({ x: p.x + CX, y: p.y + CY });
+    }
+    for (let a = 0; a < positions.length; a++) {
+      for (let b = a + 1; b < positions.length; b++) {
+        const dx = positions[a].x - positions[b].x;
+        const dy = positions[a].y - positions[b].y;
+        minDist = Math.min(minDist, Math.sqrt(dx*dx + dy*dy));
+      }
+    }
+  }
+  return minDist;
+}
+
+// Compute stage dims from the heart's bounding box + card margins
+function stageDims(scale) {
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (let i = 0; i <= ARC_SAMPLES; i++) {
+    const t = (i / ARC_SAMPLES) * 2 * Math.PI;
+    const { hx, hy } = heartXY(t, scale);
+    if (hx < minX) minX = hx; if (hx > maxX) maxX = hx;
+    if (hy < minY) minY = hy; if (hy > maxY) maxY = hy;
+  }
+  const marginX = SMALL_W / 2 + 20;
+  const marginY = SMALL_H / 2 + 20;
+  const sw = Math.ceil(maxX - minX + marginX * 2);
+  const sh = Math.ceil(maxY - minY + marginY * 2);
+  const cx = Math.ceil(-minX + marginX);
+  const cy = Math.ceil(-minY + marginY);
+  return { sw, sh, cx, cy };
+}
+
+// Auto-select scale: start at 38, increase by 2 until min spacing ≥ 160 px
+function initOrbit() {
+  let scale = 38;
+  let tbl, dims;
+  for (let attempt = 0; attempt < 20; attempt++) {
+    dims = stageDims(scale);
+    STAGE_W = dims.sw; STAGE_H = dims.sh; CX = dims.cx; CY = dims.cy;
+    tbl = buildArcTable(scale);
+    if (minSpacingForTable(tbl) >= 160) break;
+    scale += 2;
+  }
+  arcTable = tbl;
+}
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let orbitCards    = [];   // 11 mol IDs in slot order
+let centerCard    = 'dopamine';
+let phaseFraction = 0;    // 0→1 over 40 s, one full lap
+let swapping      = false;
+let lastTs        = null;
+const cardEls     = {};
+let arcTable      = null;
+
+// ─── ORBIT MATH ──────────────────────────────────────────────────────────────
+function getOrbitPos(slotIdx) {
+  const frac = (phaseFraction + slotIdx / N_ORBIT) % 1;
+  const rel  = posAtFraction(frac, arcTable);
+  return {
+    left: CX + rel.x - SMALL_W / 2,
+    top:  CY + rel.y - SMALL_H / 2,
+  };
+}
+
+function updateOrbitPositions() {
+  orbitCards.forEach((id, i) => {
+    const el = cardEls[id];
+    if (!el) return;
+    const p = getOrbitPos(i);
+    el.style.left = p.left.toFixed(2) + 'px';
+    el.style.top  = p.top.toFixed(2)  + 'px';
+  });
+}
+
+// ─── ANIMATION LOOP ───────────────────────────────────────────────────────────
+function orbitStep(ts) {
+  if (!lastTs) lastTs = ts;
+  const dt = Math.min((ts - lastTs) / 1000, 0.05); // cap dt on tab-switch
+  lastTs = ts;
+  if (!swapping) {
+    phaseFraction = (phaseFraction + dt / 40) % 1;
+    updateOrbitPositions();
+  }
+  requestAnimationFrame(orbitStep);
+}
+
+// ─── SWAP ─────────────────────────────────────────────────────────────────────
+const SWAP_TRANS = [
+  'left   0.56s cubic-bezier(0.4,0,0.2,1)',
+  'top    0.56s cubic-bezier(0.4,0,0.2,1)',
+  'width  0.56s cubic-bezier(0.4,0,0.2,1)',
+  'height 0.56s cubic-bezier(0.4,0,0.2,1)',
+].join(', ');
+
+function setGlow(el, molId, remove = false) {
+  const mol = molecules.find(m => m.id === molId);
+  if (!mol) return;
+  el.style.boxShadow = remove ? '' : `0 0 40px 6px ${mol.glow}, 0 8px 32px rgba(0,0,0,0.12)`;
+}
+
+function swapToCenter(molId) {
+  if (swapping) return;
+  const slotIdx = orbitCards.indexOf(molId);
+  if (slotIdx === -1) return;
+  swapping = true;
+
+  const inEl  = cardEls[molId];       // incoming (orbital → center)
+  const outEl = cardEls[centerCard];  // outgoing (center → orbital)
+
+  // Capture current pixel position of the orbital card (set by last rAF tick)
+  const capL = parseFloat(inEl.style.left);
+  const capT = parseFloat(inEl.style.top);
+
+  // Enable transitions on both
+  inEl.style.transition  = SWAP_TRANS + ', background 0.25s';
+  outEl.style.transition = SWAP_TRANS + ', background 0.25s';
+
+  // Incoming: grow to center
+  inEl.style.left   = (CX - CENTER_W / 2) + 'px';
+  inEl.style.top    = (CY - CENTER_H / 2) + 'px';
+  inEl.style.width  = CENTER_W + 'px';
+  inEl.style.height = CENTER_H + 'px';
+  inEl.classList.add('is-center');
+
+  // Outgoing: shrink to orbital slot position
+  outEl.style.left   = capL + 'px';
+  outEl.style.top    = capT + 'px';
+  outEl.style.width  = SMALL_W + 'px';
+  outEl.style.height = SMALL_H + 'px';
+  outEl.classList.remove('is-center');
+
+  setTimeout(() => {
+    const prevCenter = centerCard;
+    centerCard       = molId;
+    orbitCards[slotIdx] = prevCenter;
+
+    // Strip transitions — rAF takes over orbital positions
+    inEl.style.transition  = '';
+    outEl.style.transition = '';
+
+    setGlow(inEl, molId);
+    setGlow(outEl, prevCenter, true);
+    swapping = false;
+    startMusicOnInteraction();
+  }, 600);
+}
+
+// ─── RENDER MENU ──────────────────────────────────────────────────────────────
+function renderMenu() {
+  initOrbit();
+  const stage = document.getElementById('orbit-stage');
+  stage.style.width  = STAGE_W + 'px';
+  stage.style.height = STAGE_H + 'px';
+
+  // Slot assignment: dopamine = center, rest fill orbit in data order
+  centerCard  = 'dopamine';
+  orbitCards  = molecules.filter(m => m.id !== 'dopamine').map(m => m.id);
+
+  // Build all 12 cards
+  molecules.forEach(mol => {
+    const isCenter = mol.id === 'dopamine';
+    const el = document.createElement('div');
+    el.className = 'mol-card' + (isCenter ? ' is-center' : '');
+    el.dataset.id = mol.id;
+
+    const svg = (cardSVGs[mol.id] || (() => ''))(mol.color);
+
+    el.innerHTML = `
+      <div class="card-small">
+        <div class="c-svg"><svg viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg">${svg}</svg></div>
+        <div class="c-name">${mol.name}</div>
+        <div class="c-formula">${mol.formula}</div>
+      </div>
+      <div class="card-center">
+        <div class="c-svg"><svg viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg">${svg}</svg></div>
+        <div class="c-name">${mol.name}</div>
+        <div class="c-formula">${mol.formula}</div>
+        <div class="c-emotion">${mol.emotion}</div>
+        <div class="c-open">открыть →</div>
+      </div>
+    `;
+
+    el.addEventListener('click', () => {
+      if (centerCard === mol.id) openSlide(mol.id);
+      else swapToCenter(mol.id);
+    });
+
+    // Set initial size
+    el.style.width  = (isCenter ? CENTER_W : SMALL_W) + 'px';
+    el.style.height = (isCenter ? CENTER_H : SMALL_H) + 'px';
+
+    cardEls[mol.id] = el;
+    stage.appendChild(el);
+  });
+
+  // Set initial positions (no animation)
+  const centerEl = cardEls['dopamine'];
+  centerEl.style.left = (CX - CENTER_W / 2) + 'px';
+  centerEl.style.top  = (CY - CENTER_H / 2) + 'px';
+
+  orbitCards.forEach((id, i) => {
+    const p = getOrbitPos(i);
+    cardEls[id].style.left = p.left.toFixed(2) + 'px';
+    cardEls[id].style.top  = p.top.toFixed(2)  + 'px';
+  });
+
+  setGlow(centerEl, 'dopamine');
+  fitStage();
+  requestAnimationFrame(orbitStep);
+}
+
+// ─── RESPONSIVE SCALING ───────────────────────────────────────────────────────
+function fitStage() {
+  const vw    = window.innerWidth;
+  const scale = Math.min(1, (vw - 16) / STAGE_W);
+  const stage = document.getElementById('orbit-stage');
+  const wrap  = document.getElementById('orbit-wrap');
+  stage.style.transform       = `scale(${scale})`;
+  stage.style.transformOrigin = 'top center';
+  wrap.style.width  = (STAGE_W * scale) + 'px';
+  wrap.style.height = (STAGE_H * scale) + 'px';
+}
+window.addEventListener('resize', fitStage);
+
+// ─── OPEN / CLOSE SLIDES ──────────────────────────────────────────────────────
+function openSlide(id) {
+  const mol = molecules.find(m => m.id === id);
+  if (!mol) return;
+  document.getElementById('slide-content').innerHTML = `
+    <div class="slide-molecule-label">${mol.formula}</div>
+    <div class="slide-name">${mol.name}</div>
+    <div class="slide-science">${mol.science}</div>
+    <div class="slide-svg-wrap">
+      <svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" width="400" height="260">
+        ${(slideSVGs[mol.id] || (() => ''))(SC)}
+      </svg>
+    </div>
+    <div class="slide-moment">${mol.moment}</div>
+    <div class="slide-illustration">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+      </svg>
+      иллюстрация скоро появится
+    </div>
+  `;
+  document.getElementById('mol-slide').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  startMusicOnInteraction();
+}
+function openBirthday() {
+  document.getElementById('birthday-slide').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  startMusicOnInteraction();
+}
+function closeSlide() {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  document.body.style.overflow = '';
+}
+
+// ─── MUSIC ───────────────────────────────────────────────────────────────────
+let musicStarted = false;
+const audio = document.getElementById('bg-music');
+audio.volume = 0.35;
+audio.play().then(() => { musicStarted = true; document.getElementById('music-btn').classList.add('playing'); }).catch(() => {});
+function startMusicOnInteraction() {
+  if (musicStarted) return;
+  musicStarted = true;
+  audio.volume = 0.35;
+  audio.play().then(() => document.getElementById('music-btn').classList.add('playing')).catch(() => {});
+}
+function toggleMusic() {
+  if (audio.paused) {
+    audio.play().then(() => { document.getElementById('music-btn').classList.add('playing'); musicStarted = true; });
+  } else {
+    audio.pause();
+    document.getElementById('music-btn').classList.remove('playing');
+  }
+}
+document.addEventListener('pointerdown', startMusicOnInteraction, { once: true });
+document.getElementById('intro').addEventListener('pointerdown', () => { startMusicOnInteraction(); dismissIntro(); }, { once: true });
+
+// ─── PARTICLES ───────────────────────────────────────────────────────────────
+function spawnParticles() {
+  const c = document.getElementById('particles');
+  const symbols = ['♡', '♡', '♡', '✦', '·', '♡', '✧', '♡'];
+  for (let i = 0; i < 35; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const sym = symbols[Math.floor(Math.random() * symbols.length)];
+    p.textContent = sym;
+    const sz = Math.random() * 10 + 8;
+    const col = Math.random() < 0.6 ? '#F5C842' : 'rgba(13,33,55,0.25)';
+    p.style.cssText = `left:${Math.random()*100}%;font-size:${sz}px;color:${col};animation-duration:${Math.random()*18+12}s;animation-delay:${Math.random()*18}s;`;
+    c.appendChild(p);
+  }
+}
+
+// ─── INTRO ───────────────────────────────────────────────────────────────────
+function buildIntroHeart() {
+  const svg = document.getElementById('intro-heart');
+  if (!svg || !arcTable) return;
+
+  svg.setAttribute('viewBox', `0 0 ${STAGE_W} ${STAGE_H}`);
+
+  // ── SVG filter: glow bloom ──
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  defs.innerHTML = `
+    <filter id="heart-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="dot-glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>`;
+  svg.appendChild(defs);
+
+  // Build path data
+  let d = '';
+  for (let i = 0; i <= ARC_SAMPLES; i++) {
+    const p = arcTable.pts[i];
+    const x = (CX + p.x).toFixed(1);
+    const y = (CY + p.y).toFixed(1);
+    d += i === 0 ? `M${x},${y}` : `L${x},${y}`;
+  }
+  d += 'Z';
+
+  // Soft outer bloom (thick, low opacity)
+  const bloom = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  bloom.setAttribute('d', d);
+  bloom.setAttribute('fill', 'none');
+  bloom.setAttribute('stroke', '#F5C842');
+  bloom.setAttribute('stroke-width', '14');
+  bloom.setAttribute('stroke-linecap', 'round');
+  bloom.setAttribute('opacity', '0.18');
+  svg.appendChild(bloom);
+
+  // Main crisp line
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', d);
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', '#F5C842');
+  path.setAttribute('stroke-width', '5');
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('stroke-linejoin', 'round');
+  path.setAttribute('filter', 'url(#heart-glow)');
+  svg.appendChild(path);
+
+  const len = path.getTotalLength();
+  [bloom, path].forEach(el => {
+    el.style.strokeDasharray = len;
+    el.style.strokeDashoffset = len;
+  });
+
+  // Traveling spark at the draw tip
+  const spark = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  spark.setAttribute('r', '7');
+  spark.setAttribute('fill', '#fff');
+  spark.setAttribute('filter', 'url(#dot-glow)');
+  spark.setAttribute('opacity', '0');
+  svg.appendChild(spark);
+
+  // 11 dots — inner filled + outer ripple ring
+  const dots = [], rings = [];
+  for (let i = 0; i < N_ORBIT; i++) {
+    const rel = posAtFraction(i / N_ORBIT, arcTable);
+    const cx = (CX + rel.x).toFixed(1);
+    const cy = (CY + rel.y).toFixed(1);
+    const delay = `${2.1 + i * 0.1}s`;
+
+    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    ring.setAttribute('cx', cx); ring.setAttribute('cy', cy);
+    ring.setAttribute('r', '18'); ring.setAttribute('fill', 'none');
+    ring.setAttribute('stroke', '#F5C842'); ring.setAttribute('stroke-width', '1.5');
+    ring.setAttribute('opacity', '0');
+    ring.style.transition = `opacity 0.4s ease ${delay}`;
+    svg.appendChild(ring);
+    rings.push(ring);
+
+    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
+    dot.setAttribute('r', '5'); dot.setAttribute('fill', '#F5C842');
+    dot.setAttribute('filter', 'url(#dot-glow)');
+    dot.setAttribute('opacity', '0');
+    dot.style.transition = `opacity 0.3s ease ${delay}`;
+    svg.appendChild(dot);
+    dots.push(dot);
+  }
+
+  // Animate spark along path during draw
+  const DRAW_MS = 2000;
+  let sparkStart = null;
+  function animateSpark(ts) {
+    if (!sparkStart) sparkStart = ts;
+    const progress = Math.min((ts - sparkStart) / DRAW_MS, 1);
+    const pt = path.getPointAtLength(progress * len);
+    spark.setAttribute('cx', pt.x.toFixed(1));
+    spark.setAttribute('cy', pt.y.toFixed(1));
+    spark.setAttribute('opacity', progress < 0.98 ? '1' : '0');
+    if (progress < 1) requestAnimationFrame(animateSpark);
+  }
+
+  // Trigger everything
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const trans = `stroke-dashoffset ${DRAW_MS}ms cubic-bezier(0.4,0,0.2,1)`;
+    bloom.style.transition = path.style.transition = trans;
+    bloom.style.strokeDashoffset = path.style.strokeDashoffset = '0';
+    spark.setAttribute('opacity', '1');
+    requestAnimationFrame(animateSpark);
+    dots.forEach(d => { d.style.opacity = '1'; });
+    rings.forEach(r => { r.style.opacity = '0.55'; });
+  }));
+}
+
+function dismissIntro() {
+  const intro = document.getElementById('intro');
+  intro.classList.add('hide');
+  startMusicOnInteraction();
+  setTimeout(() => intro.classList.add('gone'), 1300);
+}
+function runIntro() {
+  buildIntroHeart();
+  setTimeout(() => document.getElementById('intro').classList.add('ready'), 1800);
+  setTimeout(dismissIntro, 6000);
+}
+
+// ─── KEYBOARD ────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSlide(); });
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+renderMenu();
+spawnParticles();
+runIntro();
+</script>
+</body>
+</html>
