@@ -153,8 +153,8 @@ html, body {
 
 /* SVG wrappers */
 .c-svg { width: 100%; display: flex; align-items: center; justify-content: center; }
-.card-small .c-svg { height: 100px; }
-.card-small .c-svg svg { width: 100%; height: 100px; opacity: 0.65; transition: opacity 0.2s; }
+.card-small .c-svg { height: 70px; }
+.card-small .c-svg svg { width: 100%; height: 70px; opacity: 0.65; transition: opacity 0.2s; }
 .mol-card:hover .card-small .c-svg svg { opacity: 1; }
 
 .card-center .c-svg { height: 200px; }
@@ -163,7 +163,7 @@ html, body {
 
 /* Card text */
 .card-small .c-name {
-  font-size: 16px; font-weight: 500; color: var(--text);
+  font-size: 13px; font-weight: 500; color: var(--text);
   text-align: center; letter-spacing: 0.01em; line-height: 1.3;
 }
 .card-small .c-formula {
@@ -538,10 +538,10 @@ const slideSVGs = {
 const N_ORBIT  = 11;
 const CENTER_W = 400;
 const CENTER_H = 360;
-const SMALL_W  = 160;
-const SMALL_H  = 180;
+const SMALL_W  = 120;
+const SMALL_H  = 140;
 const ARC_SAMPLES = 1000;
-const HEART_SCALE = 20;
+const HEART_SCALE = 20; // fallback; auto-scaled in initOrbit
 
 // ─── HEART PATH ───────────────────────────────────────────────────────────────
 // Parametric heart: x = 16·sin(t)³, y = −(13·cos(t) − 5·cos(2t) − 2·cos(3t) − cos(4t))
@@ -585,8 +585,28 @@ function posAtFraction(frac, tbl) {
   };
 }
 
+// Minimum arc-distance between any two consecutive orbit slots
+function minSpacingForTable(tbl) {
+  let min = Infinity;
+  for (let i = 0; i < N_ORBIT; i++) {
+    const f1 = (i / N_ORBIT) % 1;
+    const f2 = ((i + 1) / N_ORBIT) % 1;
+    const p1 = posAtFraction(f1, tbl);
+    const p2 = posAtFraction(f2, tbl);
+    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    min = Math.min(min, Math.sqrt(dx*dx + dy*dy));
+  }
+  return min;
+}
+
 function initOrbit() {
-  arcTable = buildArcTable(HEART_SCALE);
+  // Auto-scale: grow heart until orbit slots are ≥ 120 px apart (or cap at scale 26)
+  let scale = 18;
+  while (scale <= 26) {
+    arcTable = buildArcTable(scale);
+    if (minSpacingForTable(arcTable) >= 120) break;
+    scale += 2;
+  }
 }
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
