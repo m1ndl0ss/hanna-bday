@@ -82,8 +82,9 @@ html, body {
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 #menu-heading p {
-  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
-  color: #F5C842; font-weight: 400; opacity: 0.85;
+  font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: #F5C842; font-weight: 500; opacity: 0.9;
+  margin-top: 4px;
 }
 
 /* ── ORBIT STAGE ── */
@@ -217,9 +218,14 @@ html, body {
 .slide {
   position: fixed; inset: 0; z-index: 100;
   background: var(--bg); overflow-y: auto;
-  opacity: 0; pointer-events: none; transition: opacity 0.4s;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2,0,0,1);
+  transform: scale(0.96) translateY(12px);
 }
-.slide.active { opacity: 1; pointer-events: all; }
+.slide.active {
+  opacity: 1; pointer-events: all;
+  transform: scale(1) translateY(0);
+}
 .slide-inner {
   min-height: 100vh;
   display: flex; flex-direction: column;
@@ -231,12 +237,12 @@ html, body {
   display: flex; align-items: center; gap: 8px;
   font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-dim); cursor: pointer;
-  background: rgba(179,229,252,0.88); border: 1px solid var(--border);
+  background: rgba(255,255,255,0.7); border: 1px solid var(--border);
   border-radius: 8px; padding: 8px 16px;
-  transition: color 0.2s, border-color 0.2s;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
-.slide-back:hover { color: var(--text); border-color: rgba(13,33,55,0.25); }
+.slide-back:hover { color: var(--text); background: rgba(255,255,255,0.9); border-color: rgba(13,33,55,0.25); }
 .slide-back svg { width: 12px; height: 12px; }
 
 .slide-molecule-label {
@@ -244,8 +250,10 @@ html, body {
   color: var(--text-faint); margin-bottom: 6px; font-family: 'Space Mono', monospace;
 }
 .slide-name {
-  font-size: clamp(28px, 6vw, 52px); font-weight: 200; letter-spacing: 0.03em;
-  text-align: center; margin-bottom: 8px; color: var(--text);
+  font-size: clamp(28px, 6vw, 52px); font-weight: 300; letter-spacing: 0.03em;
+  text-align: center; margin-bottom: 8px;
+  background: linear-gradient(135deg, #0d2137 30%, #1a6b99);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .slide-science {
   font-size: 12px; letter-spacing: 0.06em; color: var(--text-faint);
@@ -428,7 +436,7 @@ html, body {
 <div id="menu">
   <div id="menu-heading">
     <h1>Двенадцать молекул</h1>
-    <p>формулы тебя</p>
+    <p>· формулы тебя ·</p>
   </div>
   <div id="orbit-wrap">
     <div id="orbit-stage"></div>
@@ -740,6 +748,28 @@ function renderMenu() {
   stage.style.width  = STAGE_W + 'px';
   stage.style.height = STAGE_H + 'px';
 
+  // Faint heart trail SVG
+  (function() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${STAGE_W} ${STAGE_H}`);
+    svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+    let d = '';
+    for (let i = 0; i <= ARC_SAMPLES; i++) {
+      const p = arcTable.pts[i];
+      d += i === 0 ? `M${(CX+p.x).toFixed(1)},${(CY+p.y).toFixed(1)}` : `L${(CX+p.x).toFixed(1)},${(CY+p.y).toFixed(1)}`;
+    }
+    d += 'Z';
+    const trail = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    trail.setAttribute('d', d);
+    trail.setAttribute('fill', 'none');
+    trail.setAttribute('stroke', '#F5C842');
+    trail.setAttribute('stroke-width', '1.5');
+    trail.setAttribute('stroke-dasharray', '6 10');
+    trail.setAttribute('opacity', '0.25');
+    svg.appendChild(trail);
+    stage.appendChild(svg);
+  })();
+
   // Slot assignment: dopamine = center, rest fill orbit in data order
   centerCard  = 'dopamine';
   orbitCards  = molecules.filter(m => m.id !== 'dopamine').map(m => m.id);
@@ -799,10 +829,13 @@ function renderMenu() {
 
 // ─── RESPONSIVE SCALING ───────────────────────────────────────────────────────
 function fitStage() {
-  const vw    = window.innerWidth;
-  const scale = Math.min(1, (vw - 16) / STAGE_W);
-  const stage = document.getElementById('orbit-stage');
-  const wrap  = document.getElementById('orbit-wrap');
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const scaleW = (vw - 16) / STAGE_W;
+  const scaleH = (vh - 200) / STAGE_H; // leave room for heading + birthday btn
+  const scale  = Math.min(1, scaleW, scaleH);
+  const stage  = document.getElementById('orbit-stage');
+  const wrap   = document.getElementById('orbit-wrap');
   stage.style.transform       = `scale(${scale})`;
   stage.style.transformOrigin = 'top center';
   wrap.style.width  = (STAGE_W * scale) + 'px';
