@@ -505,11 +505,11 @@ function tx(x,y,t,c,sz,a){return`<text x="${x}" y="${y}" fill="${c}" font-size="
 
 const cardSVGs = {
   // Dopamine: catechol ring (OH at 3,4 = lower-left vertices) + −CH₂−CH₂−NH₂ chain at upper-right
-  dopamine:     (c)=>`<image href="svgMolecules/dopamine.svg" x="0" y="0" width="180" height="110" preserveAspectRatio="xMidYMid meet"/>`,
+  dopamine:     (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/dopamine.png" x="0" y="0" width="180" height="110" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   // Serotonin: indole (benzene r=19 fused with pyrrole) + HO at C5 + −CH₂CH₂NH₂ at C3 + N−H
   // Benzene vertices (hx -90° start): v1=(58,49) v2=(58,68) v4=(26,68)=C5
   // Pyrrole (fused at v1–v2): N1=(76,43) C2=(87,58) C3=(76,73)
-  serotonin:    (c)=>`<text x="90" y="55" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="10" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  serotonin:    (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/serotonin.png" x="0" y="0" width="180" height="110" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   // Oxytocin: ring Cys1(46,43)–Tyr(24,43)–Ile(13,62)–Gln(24,81)–Asn(46,81)–Cys6(57,62)
   // S–S bridge outside ring (stubs from each Cys + connecting line)
   // Tail Pro–Leu–Gly–NH₂ zigzagging right from Cys6
@@ -517,28 +517,28 @@ const cardSVGs = {
   // Melatonin: indole (r=17 to fit methoxy), OCH₃ at C5(35,67), −CH₂CH₂−NH−CO−CH₃ at C3(81,72)
   // Benzene center(50,58) r=17: v1=(65,50) v2=(65,67) v4=(35,67)=C5
   // Pyrrole: N1=(81,44) C2=(91,58) C3=(81,72)
-  melatonin:    (c)=>`<text x="90" y="55" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="10" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  melatonin:    (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/melatonin.png" x="0" y="0" width="180" height="110" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   // PEA: benzene ring + −CH₂−CH₂−NH₂ (no substituents on ring)
-  pea:          (c)=>`<text x="90" y="55" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="10" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  pea:          (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/PEA.png" x="0" y="0" width="180" height="110" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   // Adrenaline: catechol ring (same as dopamine) + −CHOH−CH₂−NHCH₃ chain
   // Ring center(65,58) r=22: v1=(84,47) chain, v5=(46,47) OH, v4=(46,69) OH
   // Alpha C(100,38): OH going straight up; N(128,54): H up + CH₃ lower-right
-  adrenaline:   (c)=>`<text x="90" y="55" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="10" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  adrenaline:   (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/adrenalin.png" x="0" y="0" width="180" height="110" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   endorphin:    (c)=>['Tyr','Gly','Gly','Phe','Leu'].map((a,i)=>{const x=18+i*32,y=55;return`<rect x="${x-8}" y="${y-10}" width="24" height="20" rx="4" fill="none" stroke="${c}" stroke-width="1.2"/><text x="${x+4}" y="${y+1}" fill="${c}" font-size="7" font-family="Space Mono,monospace" text-anchor="middle">${a}</text>${i<4?ln(x+16,y,x+24,y,c,1.2):''}`;}).join('')+`<text x="163" y="59" fill="${c}" font-size="9" font-family="Space Mono,monospace">...</text>`,
   // Cortisol: steroid skeleton A(6)–B(6)–C(6)–D(5), all bond-length consistent (r=14)
   // Ring A center(38,68): C3=O (v4=26,75). Ring C top (86,54): C11-OH.
   // Ring D rightmost (120,68)=C17: OH + side chain to C20=O
-  cortisol:     (c)=>`<text x="90" y="55" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="10" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  cortisol:     (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/cortisol.png" x="0" y="0" width="180" height="110" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   // Acetylcholine: CH₃−C(=O)−O−CH₂−CH₂−N⁺(CH₃)₃
   // Zigzag chain; N⁺ shown as small circle with three CH₃ branches
-  acetylcholine:(c)=>`<text x="90" y="55" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="10" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  acetylcholine:(c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/Acetylcholine.png" x="0" y="0" width="180" height="110" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   // Noradrenaline: identical to adrenaline but NH₂ (primary) instead of NHCH₃
   // Ring center(65,58) r=22, same catechol OHs; chain −CHOH−CH₂−NH₂
-  noradrenaline:(c)=>`<text x="90" y="55" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="10" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  noradrenaline:(c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/noradrenalin.png" x="0" y="0" width="180" height="110" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   prolactin:    (c)=>{const p=[[30,40],[55,28],[85,34],[110,28],[140,38],[155,55],[145,72],[120,82],[95,90],[68,84],[44,76],[30,60]];let s='';for(let i=0;i<p.length-1;i++)s+=ln(p[i][0],p[i][1],p[i+1][0],p[i+1][1],c,1.4);s+=ln(p[p.length-1][0],p[p.length-1][1],p[0][0],p[0][1],c,1.4);p.forEach(([x,y],i)=>{if(i%3===0)s+=`<circle cx="${x}" cy="${y}" r="2.5" fill="${c}" opacity="0.5"/>`;});return s;},
   // Histamine: imidazole pentagon, C4(72,55) on right, side chain −CH₂−CH₂−NH₂
   // C4(72,55)→C5(57,76)→N1(32,68)→C2(32,42)→N3(57,34)→C4. N1 has H, N3 has no H.
-  histamine:    (c)=>`<text x="90" y="55" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="10" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  histamine:    (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/Histamine.png" x="0" y="0" width="180" height="110" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
 };
 
 // ─── SLIDE SVG GENERATORS (viewBox 0 0 400 260) ──────────────────────────────
@@ -548,30 +548,30 @@ function stx(x,y,t,c,sz,a){return`<text x="${x}" y="${y}" fill="${c}" font-size=
 function sHex(cx,cy,r,c,sw){const pts=[];for(let i=0;i<6;i++){const a=(i*60-90)*Math.PI/180;pts.push(`${(cx+r*Math.cos(a)).toFixed(1)},${(cy+r*Math.sin(a)).toFixed(1)}`);}const p=pts.map(s=>s.split(',').map(Number));return p.map((_,i)=>sln(p[i][0],p[i][1],p[(i+1)%6][0],p[(i+1)%6][1],c,sw)).join('')+`<circle cx="${cx}" cy="${cy}" r="${(r*0.56).toFixed(1)}" fill="none" stroke="${c}" stroke-width="${sw*0.7}" stroke-dasharray="5 4" class="draw-line"/>`;}
 const slideSVGs = {
   // Dopamine: catechol ring + −CH₂−CH₂−NH₂, consistent with card orientation
-  dopamine:     (c)=>`<image href="svgMolecules/dopamine.svg" x="0" y="0" width="400" height="260" preserveAspectRatio="xMidYMid meet"/>`,
+  dopamine:     (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/dopamine.png" x="0" y="0" width="400" height="260" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   // Serotonin slide: benzene r=45 center(95,135) + pyrrole N1=(177,99) C2=(203,135) C3=(177,171)
-  serotonin:    (c)=>`<text x="200" y="130" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="18" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  serotonin:    (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/serotonin.png" x="0" y="0" width="400" height="260" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   // Oxytocin slide: ring center(90,155) r=55 — same topology as card, scaled ×2.5
   // Cys6(145,155) Asn(117.5,203) Gln(62.5,203) Ile(35,155) Tyr(62.5,107) Cys1(117.5,107)
   oxytocin:     (c)=>`${sln(117.5,107,62.5,107,c,2)}${sln(62.5,107,35,155,c,2)}${sln(35,155,62.5,203,c,2)}${sln(62.5,203,117.5,203,c,2)}${sln(117.5,203,145,155,c,2)}${sln(117.5,107,117.5,80,c,2)}${sln(145,155,163,128,c,2)}${sln(117.5,80,163,128,c,2)}${stx(117.5,66,'S',c,13)}${stx(168,122,'S',c,13,'start')}${stx(117.5,97,'Cys',c,11)}${stx(62.5,97,'Tyr',c,11)}${stx(22,155,'Ile',c,11,'end')}${stx(62.5,220,'Gln',c,11)}${stx(117.5,220,'Asn',c,11)}${stx(151,148,'Cys',c,11,'start')}${sln(145,155,183,176,c,2)}${sln(183,176,222,155,c,2)}${sln(222,155,261,176,c,2)}${sln(261,176,295,155,c,2)}${stx(183,194,'Pro',c,11)}${stx(222,143,'Leu',c,11)}${stx(261,194,'Gly',c,11)}${stx(302,148,'NH₂',c,14,'start')}`,
   // Melatonin slide: indole benzene(120,135) r=42, same topology as serotonin slide
   // C5(84,156): C→O(58,172)→CH₃(32,156) zigzag; C3(196,169): CH₂CH₂−N(H)−C(=O)−CH₃
-  melatonin:    (c)=>`<text x="200" y="130" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="18" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  melatonin:    (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/melatonin.png" x="0" y="0" width="400" height="260" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   // PEA slide: clean benzene + chain, no substituents
-  pea:          (c)=>`<text x="200" y="130" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="18" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  pea:          (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/PEA.png" x="0" y="0" width="400" height="260" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   // Adrenaline slide: catechol ring(140,140) r=50 + −CHOH−CH₂−NHCH₃
   // Alpha C(218,97): OH up to (218,72); beta C(253,115): CH₂; N(288,97): H up + CH₃ lower-right
-  adrenaline:   (c)=>`<text x="200" y="130" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="18" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  adrenaline:   (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/adrenalin.png" x="0" y="0" width="400" height="260" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   endorphin:    (c)=>{const aa=['Tyr','Gly','Gly','Phe','Leu','Met'];let s=aa.map((a,i)=>{const x=20+i*60,y=120;return`<rect x="${x}" y="${y-20}" width="48" height="40" rx="8" fill="rgba(0,0,0,0.4)" stroke="${c}" stroke-width="1.8" class="draw-line"/><text x="${x+24}" y="${y+2}" fill="${c}" font-size="13" font-family="Space Mono,monospace" text-anchor="middle" class="draw-label">${a}</text>${i<aa.length-1?sln(x+48,y,x+60,y,c,2):''}`;}).join('');s+=stx(390,120,'...',c,18,'start')+stx(200,70,'β-эндорфин (фрагмент)',c,10)+sln(200,170,200,200,c,1.5)+stx(200,210,'пептидная цепь',c,10);return s;},
-  cortisol:     (c)=>`<text x="200" y="130" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="18" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  cortisol:     (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/cortisol.png" x="0" y="0" width="400" height="260" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   // Acetylcholine slide: CH₃−C(=O)−O−CH₂−CH₂−N⁺(CH₃)₃, consistent zigzag
-  acetylcholine:(c)=>`<text x="200" y="130" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="18" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  acetylcholine:(c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/Acetylcholine.png" x="0" y="0" width="400" height="260" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   // Noradrenaline slide: same as adrenaline slide but chain ends in NH₂ not NHCH₃
-  noradrenaline:(c)=>`<text x="200" y="130" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="18" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  noradrenaline:(c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/noradrenalin.png" x="0" y="0" width="400" height="260" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
   prolactin:    (c)=>{const pts=[[60,60],[110,40],[165,50],[215,40],[270,58],[300,90],[285,130],[255,158],[220,175],[180,180],[140,172],[100,160],[68,138],[52,105],[60,78]];let s='';for(let i=0;i<pts.length-1;i++)s+=sln(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],c,2.2);pts.forEach(([x,y],i)=>{if(i%2===0)s+=`<circle cx="${x}" cy="${y}" r="5" fill="${c}" opacity="0.4" class="draw-line"/>`;});s+=stx(180,110,'пролактин',c,10)+stx(180,125,'(упрощённо)',c,9);return s;},
   // Histamine slide: imidazole center(100,135) r=52, C4 on right, same topology
   // C4(152,135)→C5(116,185)→N1(58,166)→C2(58,104)→N3(116,86)→C4
-  histamine:    (c)=>`<text x="200" y="130" text-anchor="middle" dominant-baseline="central" fill="${c}" font-size="18" font-family='Space Mono,monospace' opacity="0.35">...</text>`,
+  histamine:    (c)=>`<defs><filter id="wt"><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 -1 -1 -1 3 0"/></filter></defs><image href="pngMolecules/Histamine.png" x="0" y="0" width="400" height="260" preserveAspectRatio="xMidYMid meet" filter="url(#wt)"/>`,
 };
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
