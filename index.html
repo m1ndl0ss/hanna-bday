@@ -37,7 +37,7 @@ html, body {
   pointer-events: none;
 }
 #header-title {
-  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--text-faint); font-weight: 400;
 }
 #music-btn {
@@ -72,7 +72,7 @@ html, body {
   text-align: center; pointer-events: none;
 }
 #menu-heading h1 {
-  font-size: clamp(18px, 2.5vw, 30px); font-weight: 200;
+  font-size: clamp(22px, 3.5vw, 42px); font-weight: 200;
   letter-spacing: 0.05em; margin-bottom: 8px;
   background: linear-gradient(135deg, #0d2137 30%, #1a6b99);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
@@ -157,31 +157,31 @@ html, body {
 
 /* SVG wrappers */
 .c-svg { width: 100%; display: flex; align-items: center; justify-content: center; }
-.card-small .c-svg { height: 84px; }
-.card-small .c-svg svg { width: 100%; height: 84px; opacity: 0.65; transition: opacity 0.2s; }
+.card-small .c-svg { height: 76px; }
+.card-small .c-svg svg { width: 100%; height: 76px; opacity: 0.65; transition: opacity 0.2s; }
 .mol-card:hover .card-small .c-svg svg { opacity: 1; }
 
-.card-center .c-svg { height: 170px; }
-.card-center .c-svg svg { max-width: 100%; max-height: 170px; opacity: 0.8; transition: opacity 0.2s; }
+.card-center .c-svg { height: 155px; }
+.card-center .c-svg svg { max-width: 100%; max-height: 155px; opacity: 0.8; transition: opacity 0.2s; }
 .mol-card.is-center:hover .card-center .c-svg svg { opacity: 1; }
 
 /* Card text */
 .card-small .c-name {
-  font-size: 13px; font-weight: 500; color: var(--text);
+  font-size: 14px; font-weight: 500; color: var(--text);
   text-align: center; letter-spacing: 0.01em; line-height: 1.3;
 }
 .card-small .c-formula {
   font-family: 'Space Mono', monospace;
-  font-size: 12px; color: var(--text-faint);
+  font-size: 11px; color: var(--text-faint);
   text-align: center; letter-spacing: 0.03em;
 }
 .card-center .c-name {
-  font-size: 30px; font-weight: 400; color: var(--text);
+  font-size: 28px; font-weight: 400; color: var(--text);
   letter-spacing: 0.03em; text-align: center;
 }
 .card-center .c-formula {
   font-family: 'Space Mono', monospace;
-  font-size: 15px; color: var(--text-dim);
+  font-size: 14px; color: var(--text-dim);
   text-align: center; letter-spacing: 0.05em;
 }
 .card-center .c-emotion {
@@ -613,10 +613,10 @@ const slideSVGs = {
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const N_ORBIT  = 11;
-const CENTER_W = 272;
-const CENTER_H = 246;
-const SMALL_W  = 144;
-const SMALL_H  = 168;
+const CENTER_W = 252;
+const CENTER_H = 228;
+const SMALL_W  = 130;
+const SMALL_H  = 152;
 const ARC_SAMPLES = 1000;
 const HEART_SCALE = 20; // fallback; auto-scaled in initOrbit
 
@@ -676,14 +676,33 @@ function minSpacingForTable(tbl) {
   return min;
 }
 
+let orbitCSSScale = 1;
+
 function initOrbit() {
-  // Auto-scale: grow heart until orbit slots are ≥ 120 px apart (or cap at scale 26)
+  // Build at a fixed reasonable scale
   let scale = 18;
-  while (scale <= 26) {
+  while (scale <= 24) {
     arcTable = buildArcTable(scale);
-    if (minSpacingForTable(arcTable) >= 140) break;
-    scale += 2;
+    if (minSpacingForTable(arcTable) >= 120) break;
+    scale += 1;
   }
+
+  // Compute bounding box of all 11 orbit slot positions
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (let i = 0; i < N_ORBIT; i++) {
+    const p = posAtFraction(i / N_ORBIT, arcTable);
+    minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+    minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+  }
+  // Pad by card half-size so cards don't clip viewport edges
+  const orbitW = maxX - minX + SMALL_W * 1.4;
+  const orbitH = maxY - minY + SMALL_H * 1.4;
+
+  // Available viewport (subtract header space)
+  const vw = window.innerWidth;
+  const vh = window.innerHeight - 80;
+
+  orbitCSSScale = Math.min(1, Math.min(vw / orbitW, vh / orbitH) * 0.9);
 }
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
@@ -790,6 +809,8 @@ function swapToCenter(molId) {
 function renderMenu() {
   initOrbit();
   const stage = document.getElementById('orbit-stage');
+  stage.style.transform = `scale(${orbitCSSScale})`;
+  stage.style.transformOrigin = '0 0';
 
   // Faint heart trail SVG — centered on orbit origin (0,0)
   (function() {
