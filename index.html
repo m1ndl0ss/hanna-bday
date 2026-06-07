@@ -583,7 +583,7 @@ html, body {
       <div class="bday-title">happy bday &lt;3</div>
       <div class="bday-subtitle">химия чувств · ханна</div>
     </div>
-    <div class="bday-mol-grid" id="bday-mol-grid"></div>
+    <div class="bday-message">-</div>
   </div>
 </div>
 
@@ -1002,21 +1002,6 @@ function envClick() {
   setTimeout(() => env.classList.remove('opening'), 2000);
 }
 function openBirthday() {
-  const grid = document.getElementById('bday-mol-grid');
-  grid.innerHTML = '';
-  molecules.forEach((mol, i) => {
-    const card = document.createElement('div');
-    card.className = 'bday-mol-card';
-    card.style.animationDelay = `${0.15 + i * 0.06}s`;
-    const svg = (cardSVGs[mol.id] || (() => ''))(mol.color);
-    card.innerHTML = `
-      <div class="bm-svg"><svg viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg">${svg}</svg></div>
-      <div class="bm-name">${mol.name}</div>
-      <div class="bm-formula">${mol.formula}</div>
-    `;
-    card.addEventListener('click', () => { closeSlide(); setTimeout(() => openSlide(mol.id), 350); });
-    grid.appendChild(card);
-  });
   document.getElementById('birthday-slide').classList.add('active');
   document.body.style.overflow = 'hidden';
   startMusicOnInteraction();
