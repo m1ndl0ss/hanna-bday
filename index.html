@@ -934,10 +934,20 @@ function renderMenu() {
       d += i === 0 ? `M${p.x.toFixed(1)},${p.y.toFixed(1)}` : `L${p.x.toFixed(1)},${p.y.toFixed(1)}`;
     });
     d += 'Z';
+    // Soft glow bloom underneath
+    const glow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    glow.setAttribute('d', d); glow.setAttribute('fill', 'none');
+    glow.setAttribute('stroke', '#F5C842'); glow.setAttribute('stroke-width', '10');
+    glow.setAttribute('stroke-linecap', 'round');
+    glow.setAttribute('opacity', '0.07');
+    svg.appendChild(glow);
+    // Main visible line
     const trail = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     trail.setAttribute('d', d); trail.setAttribute('fill', 'none');
-    trail.setAttribute('stroke', '#F5C842'); trail.setAttribute('stroke-width', '1.5');
-    trail.setAttribute('stroke-dasharray', '6 10'); trail.setAttribute('opacity', '0.25');
+    trail.setAttribute('stroke', '#F5C842'); trail.setAttribute('stroke-width', '2');
+    trail.setAttribute('stroke-dasharray', '8 12');
+    trail.setAttribute('stroke-linecap', 'round');
+    trail.setAttribute('opacity', '0.55');
     svg.appendChild(trail);
     stage.appendChild(svg);
   })();
