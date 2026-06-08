@@ -587,7 +587,7 @@ html, body {
         <div class="env-flap"></div>
         <div class="env-lock">🔒</div>
       </div>
-      <div class="env-progress" id="env-progress">0 / 12</div>
+      <div class="env-progress" id="env-progress">0 / 9</div>
       <div class="env-label">С днём<br>рождения</div>
     </div>
   </div>
@@ -772,7 +772,7 @@ function initOrbit() {
   let scale = 18;
   while (scale <= 24) {
     arcTable = buildArcTable(scale);
-    if (minSpacingForTable(arcTable) >= 120) break;
+    if (minSpacingForTable(arcTable) >= 160) break;
     scale += 1;
   }
 
@@ -844,7 +844,7 @@ function orbitStep(ts) {
   const dt = Math.min((ts - lastTs) / 1000, 0.05); // cap dt on tab-switch
   lastTs = ts;
   if (!swapping) {
-    phaseFraction = (phaseFraction + dt / 40) % 1;
+    phaseFraction = (phaseFraction + dt / 32) % 1;
     updateOrbitPositions();
   }
   requestAnimationFrame(orbitStep);
