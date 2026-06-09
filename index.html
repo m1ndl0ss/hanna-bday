@@ -42,14 +42,14 @@ html, body {
 }
 #music-btn {
   pointer-events: all; cursor: pointer;
-  width: 224px; height: 224px; border-radius: 50%;
+  width: 56px; height: 56px; border-radius: 50%;
   background: transparent; border: none;
   display: flex; align-items: center; justify-content: center;
   transition: opacity 0.2s;
 }
 #music-btn:hover { opacity: 0.85; }
 #vinyl {
-  width: 224px; height: 224px; border-radius: 50%;
+  width: 56px; height: 56px; border-radius: 50%;
   overflow: hidden;
   transform: rotate(-13deg);
   transition: transform 0.4s ease;
@@ -283,6 +283,21 @@ html, body {
   transition: color 0.2s;
 }
 #envelope:hover .env-label { color: var(--text-dim); }
+/* ── TOUCH: disable hover effects on touch devices ── */
+@media (hover: none) {
+  .mol-card:not(.is-center):hover {
+    background: rgba(255,255,255,0.65);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .mol-card:hover .card-small .c-svg svg { opacity: 0.65; }
+  .mol-card.is-center:hover .card-center .c-svg svg { opacity: 0.8; }
+  .mol-card.is-center:hover .card-center .c-open { color: var(--text-faint); }
+  #envelope:hover .env-scene { filter: drop-shadow(0 4px 14px rgba(13,33,55,0.10)); }
+  #envelope:hover .env-label { color: var(--text-faint); }
+  #music-btn:hover { opacity: 1; }
+  .slide-back:hover { color: var(--text-dim); background: rgba(255,255,255,0.7); border-color: var(--border); }
+}
+
 /* ── RESPONSIVE: move envelope to bottom on small screens ── */
 @media (max-width: 960px) {
   #env-anchor {
