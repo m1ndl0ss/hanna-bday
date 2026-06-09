@@ -555,6 +555,19 @@ html, body {
   to   { transform: translateY(-60px) rotate(25deg) scale(0.25); opacity: 0; }
 }
 
+/* ── BIRTHDAY CONFETTI ── */
+#bday-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 101; overflow: hidden; }
+.confetti-piece {
+  position: absolute; top: -30px; line-height: 1;
+  animation: confetti-fall linear forwards; opacity: 0; user-select: none;
+}
+@keyframes confetti-fall {
+  0%   { opacity: 0; }
+  8%   { opacity: 0.75; }
+  80%  { opacity: 0.5; }
+  100% { transform: translateY(110vh) rotate(var(--c-rot)); opacity: 0; }
+}
+
 /* ── INTRO ── */
 #intro {
   position: fixed; inset: 0; z-index: 999;
@@ -597,6 +610,8 @@ html, body {
 </style>
 </head>
 <body>
+
+<div id="bday-confetti"></div>
 
 <div id="intro">
   <div class="intro-ring" style="width:300px;height:300px;animation-delay:0s"></div>
@@ -690,7 +705,7 @@ const molecules = [
   { id:'adrenaline',    name:'Адреналин',       formula:'C₉H₁₃NO₃',        science:'гормон острой стрессовой реакции',            emotion:'возбуждение, острый момент',      moment:'лифт, который ударял мне руку',                        color:'#f87171', glow:'rgba(248,113,113,0.35)' },
   { id:'endorphin',     name:'Эндорфин',        formula:'C₁₅₇H₂₄₁N₃₉O₄₆S', science:'эндогенный опиоидный нейропептид',            emotion:'радость, эйфория',               moment:'концерт The Neighbourhood',                       color:'#fbbf24', glow:'rgba(251,191,36,0.35)' },
   { id:'cortisol',      name:'Кортизол',        formula:'C₂₁H₃₀O₅',        science:'гормон стресса коры надпочечников',           emotion:'стресс, напряжение',             moment:'Никита звонит пока мы играем в шахматы',                              color:'#94a3b8', glow:'rgba(148,163,184,0.3)' },
-  { id:'acetylcholine', name:'Ацетилхолин',     formula:'C₇H₁₆NO₂⁺',       science:'нейромедиатор памяти и обучения',             emotion:'обучение, память',               moment:'рассказывала мне про червячков на земуне ( фотка не с того дня, но уж слишком сильно ее люблю',                                color:'#22d3ee', glow:'rgba(34,211,238,0.35)' },
+  { id:'acetylcholine', name:'Ацетилхолин',     formula:'C₇H₁₆NO₂⁺',       science:'нейромедиатор памяти и обучения',             emotion:'обучение, память',               moment:'рассказывала мне про червячков на земуне (фотка не с того дня, но уж слишком сильно ее люблю)',                                color:'#22d3ee', glow:'rgba(34,211,238,0.35)' },
 ];
 
 // ─── CARD SVG GENERATORS (viewBox 0 0 180 110) ───────────────────────────────
@@ -1117,10 +1132,41 @@ function openBirthday() {
   document.getElementById('birthday-slide').classList.add('active');
   document.body.style.overflow = 'hidden';
   startMusicOnInteraction();
+  spawnConfetti();
 }
 function closeSlide() {
   document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
   document.body.style.overflow = '';
+  clearConfetti();
+}
+
+// ─── CONFETTI ─────────────────────────────────────────────────────────────────
+const _cSyms   = ['♡','✦','✿','✧','★','·','♥','°','✱'];
+const _cColors = ['#a78bfa','#f472b6','#fbbf24','#34d399','#fb923c','#818cf8','#22d3ee','rgba(245,200,66,0.9)'];
+let _cTimer = null;
+
+function _addConfettiPiece() {
+  const wrap = document.getElementById('bday-confetti');
+  const el   = document.createElement('span');
+  el.className = 'confetti-piece';
+  const sym = _cSyms[Math.floor(Math.random() * _cSyms.length)];
+  const col = _cColors[Math.floor(Math.random() * _cColors.length)];
+  const dur = 7 + Math.random() * 9;
+  const rot = (Math.random() * 600 - 300) + 'deg';
+  el.textContent = sym;
+  el.style.cssText = `left:${Math.random()*100}%;font-size:${9+Math.random()*10}px;color:${col};animation-duration:${dur}s;--c-rot:${rot};animation-delay:${Math.random()*1.5}s;`;
+  el.addEventListener('animationend', () => el.remove());
+  wrap.appendChild(el);
+}
+
+function spawnConfetti() {
+  for (let i = 0; i < 22; i++) _addConfettiPiece();
+  _cTimer = setInterval(() => { for (let i = 0; i < 5; i++) _addConfettiPiece(); }, 1400);
+}
+
+function clearConfetti() {
+  clearInterval(_cTimer); _cTimer = null;
+  document.getElementById('bday-confetti').innerHTML = '';
 }
 
 // ─── MUSIC ───────────────────────────────────────────────────────────────────
