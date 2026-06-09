@@ -283,6 +283,16 @@ html, body {
   transition: color 0.2s;
 }
 #envelope:hover .env-label { color: var(--text-dim); }
+/* ── RESPONSIVE: move envelope to bottom on small screens ── */
+@media (max-width: 960px) {
+  #env-anchor {
+    left: 24px;
+    top: auto;
+    bottom: 24px;
+    transform: none;
+  }
+}
+
 /* locked state */
 #envelope.locked {
   cursor: default;
@@ -447,6 +457,27 @@ html, body {
   color: var(--text-faint);
   animation: fade-up 0.8s 0.2s ease both;
 }
+@keyframes hb-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+/* birthday message */
+.bday-message {
+  max-width: 520px; width: 100%;
+  text-align: left;
+  font-size: clamp(15px, 2vw, 18px); font-weight: 300; line-height: 1.85;
+  color: var(--text);
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-left: 3px solid rgba(245,200,66,0.55);
+  border-radius: 0 14px 14px 0;
+  padding: 24px 28px;
+  margin-bottom: 48px;
+  animation: fade-up 0.6s 0.4s ease both;
+}
+
 /* molecule grid */
 .bday-mol-grid {
   display: flex; flex-wrap: wrap; justify-content: center;
@@ -616,7 +647,6 @@ html, body {
     <div class="bday-hero">
       <div class="bday-big-icon">♡</div>
       <div class="bday-title">happy bday &lt;3</div>
-      <div class="bday-subtitle">химия чувств · ханна</div>
     </div>
     <div class="bday-message">-</div>
   </div>
@@ -787,11 +817,15 @@ function initOrbit() {
   const orbitW = maxX - minX + SMALL_W * 1.4;
   const orbitH = maxY - minY + SMALL_H * 1.4;
 
-  // Available viewport (subtract header space)
+  // Available viewport (subtract header space and envelope on large screens)
   const vw = window.innerWidth;
   const vh = window.innerHeight - 80;
+  // On large screens the envelope sits on the left (~160px); on small screens
+  // it moves to the bottom via CSS so we don't need to subtract it.
+  const envReserve = vw > 960 ? 160 : 0;
+  const effectiveVW = vw - envReserve;
 
-  orbitCSSScale = Math.min(1, Math.min(vw / orbitW, vh / orbitH) * 0.9);
+  orbitCSSScale = Math.min(1, Math.min(effectiveVW / orbitW, vh / orbitH) * 0.9);
 }
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
