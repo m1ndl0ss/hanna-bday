@@ -964,6 +964,13 @@ function swapToCenter(molId) {
 function renderMenu() {
   initOrbit();
   const stage = document.getElementById('orbit-stage');
+  // Use window.innerWidth/Height (not 100vw/100vh) so the center lands on the
+  // true visible area on iPad Safari where 100vh > visible height.
+  // Also shift right by half the envelope reserve so the orbit center sits in
+  // the middle of the usable area (envelope takes ~160px on the left on wide screens).
+  const envShiftX = window.innerWidth > 960 ? 80 : 0;
+  stage.style.left = (window.innerWidth / 2 + envShiftX) + 'px';
+  stage.style.top  = (window.innerHeight / 2) + 'px';
   stage.style.transform = `scale(${orbitCSSScale})`;
   stage.style.transformOrigin = '0 0';
 
