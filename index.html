@@ -555,6 +555,25 @@ html, body {
   to   { transform: translateY(-60px) rotate(25deg) scale(0.25); opacity: 0; }
 }
 
+/* ── DISK HINT ── */
+#disk-hint {
+  position: fixed; top: 108px; right: 32px; width: 80px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  pointer-events: none; z-index: 11;
+  opacity: 0; animation: hint-show 9s ease 2.5s forwards;
+}
+#disk-hint.hide { opacity: 0 !important; animation: none !important; transition: opacity 0.5s ease; }
+.disk-hint-arrow { width: 18px; height: 26px; }
+.disk-hint-text {
+  font-size: 10.5px; font-style: italic; color: var(--text-faint);
+  letter-spacing: 0.03em; text-align: center; line-height: 1.4; white-space: nowrap;
+}
+@keyframes hint-show {
+  0%   { opacity: 0; transform: translateY(5px); }
+  12%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 /* ── BIRTHDAY CONFETTI ── */
 #bday-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 101; overflow: hidden; }
 .confetti-piece {
@@ -612,6 +631,14 @@ html, body {
 <body>
 
 <div id="bday-confetti"></div>
+
+<div id="disk-hint">
+  <svg class="disk-hint-arrow" viewBox="0 0 18 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9 24 C3 18 15 12 9 3" stroke="rgba(13,33,55,0.28)" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M5 7 L9 1 L13 7" stroke="rgba(13,33,55,0.28)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span class="disk-hint-text">послушать<br>джесси :)</span>
+</div>
 
 <div id="intro">
   <div class="intro-ring" style="width:300px;height:300px;animation-delay:0s"></div>
@@ -1173,14 +1200,16 @@ function clearConfetti() {
 let musicStarted = false;
 const audio = document.getElementById('bg-music');
 audio.volume = 0.35;
-audio.play().then(() => { musicStarted = true; document.getElementById('music-btn').classList.add('playing'); }).catch(() => {});
+audio.play().then(() => { musicStarted = true; document.getElementById('music-btn').classList.add('playing'); document.getElementById('disk-hint').classList.add('hide'); }).catch(() => {});
 function startMusicOnInteraction() {
   if (musicStarted) return;
   musicStarted = true;
   audio.volume = 0.35;
   audio.play().then(() => document.getElementById('music-btn').classList.add('playing')).catch(() => {});
 }
+function hideDiskHint() { document.getElementById('disk-hint').classList.add('hide'); }
 function toggleMusic() {
+  hideDiskHint();
   if (audio.paused) {
     audio.play().then(() => { document.getElementById('music-btn').classList.add('playing'); musicStarted = true; });
   } else {
